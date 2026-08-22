@@ -42,7 +42,7 @@ dev = [
   "pytest>=8.2",
   # Pinned exactly: ruff's formatter output changes between releases, so an unpinned
   # version drifts from CI and fails `ruff format --check`. Bump deliberately.
-  "ruff==0.15.18",
+  "ruff==0.16.3",
   "mypy>=1.10",
   "types-PyYAML",
   # agent-eval-kit: TEST-ONLY here, for assert_can_go_red. A3 is a control-plane service
