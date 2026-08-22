@@ -1,0 +1,36 @@
+# Copy to terraform.tfvars and fill in. Only project_id is required.
+project_id      = "my-gcp-project"
+backend         = "alloydb" # or "firestore"
+region          = "us-central1"
+allowed_regions = ["us-central1"]
+container_image = "us-central1-docker.pkg.dev/my-gcp-project/hrz/agent-registry:0.1.0"
+public_service_url        = "https://registry-REPLACE.run.app"
+service_audience          = "https://registry-REPLACE.run.app"
+caller_service_accounts = [
+  "doc1-runtime@my-gcp-project.iam.gserviceaccount.com",
+  "ai-quality-app@my-gcp-project.iam.gserviceaccount.com",
+]
+quality_service_url       = "https://quality-REPLACE.run.app"
+observability_service_url = "https://observability-REPLACE.run.app"
+release_policy_version          = "release-policy/v1"
+release_dataset_id              = "registry-release-golden"
+release_dataset_version         = "v1"
+release_dataset_digest          = "sha256:REPLACE"
+release_evaluator               = "gemini-enterprise-agent-evaluation"
+release_threshold_policy_digest = "sha256:REPLACE"
+release_artifact_prefixes       = ["gs://immutable-eval-artifacts/"]
+release_redteam_categories = [
+  "prompt_injection",
+  "jailbreak",
+  "pii_exfil",
+  "harmful_content",
+  "hallucination",
+]
+
+# Residency / sovereignty posture (D5). A second region or enterprise changes only this file.
+allowed_member_domain_ids = [] # e.g. ["C01abcdef"] Cloud Identity customer ids
+access_policy_name        = "" # Access Context Manager policy id; empty = no perimeter here
+vpc_sc_enforce            = false # dry run first; flip only when the dry-run alert is quiet
+log_retention_days        = 400
+log_bucket_locked         = true
+notification_channels     = []

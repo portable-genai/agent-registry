@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Provider selections are source-controlled; do not ignore .terraform.lock.hcl.
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/*.tfplan
+infra/terraform/*.auto.tfvars
+
+# Secrets / local env — never commit
+*.env
+.env
+.env.*
+!.env.example
+*-key.json
+*.pem
+service-account*.json
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
