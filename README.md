@@ -137,7 +137,7 @@ production evidence.
 
 ---
 
-## Interop: A2A v1.0 + MCP 2025-11-25
+## Interop: A2A v1.0 + MCP 2026-07-28
 
 Hrz3 is built for the two interop standards the platform pins (SPEC §3):
 
@@ -150,13 +150,13 @@ exposes the card it would serve at its own well-known path via the passthrough
 `GET /v1/agents/{name}/card`, so an orchestrator can resolve a peer's card through the
 catalog without first knowing the peer's URL. This makes Hrz3 the **A2A discovery hub**.
 
-**MCP 2025-11-25 (Model Context Protocol).** MCP governs how agents reach *tools / context
+**MCP 2026-07-28 (Model Context Protocol).** MCP governs how agents reach *tools / context
 servers*. Hrz3 does not proxy MCP traffic; it governs it. The `governance.scopes` on a card
 declare exactly which MCP tools an agent is entitled to call (e.g.
 `mcp:tool:agent_search.query`) and which A2A peers it may invoke. The platform's guardrail
 and runtime layers read these scopes from the catalog to enforce least privilege, and
 `governance.protocols` records which interop protocols (`a2a`, `mcp`) each agent speaks so
-discovery can filter by capability. Pinning to the **2025-11-25** MCP revision keeps the
+discovery can filter by capability. Pinning to the **2026-07-28** MCP revision keeps the
 scope vocabulary aligned across Hrz1 (guardrail), Hrz3 (registry) and the agents themselves.
 
 ---
