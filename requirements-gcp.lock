@@ -36,20 +36,20 @@ google-api-core==2.34.0
     #   google-cloud-alloydb-connector
     #   google-cloud-core
     #   google-cloud-firestore
-google-auth==2.56.3
+google-auth==2.57.0
     # via
     #   google-api-core
     #   google-cloud-alloydb
     #   google-cloud-alloydb-connector
     #   google-cloud-core
     #   google-cloud-firestore
-google-cloud-alloydb==0.11.0
+google-cloud-alloydb==0.11.1
     # via google-cloud-alloydb-connector
 google-cloud-alloydb-connector==1.13.1
     # via agent-registry (pyproject.toml)
-google-cloud-core==2.6.1
+google-cloud-core==2.7.0
     # via google-cloud-firestore
-google-cloud-firestore==2.28.1
+google-cloud-firestore==2.29.0
     # via agent-registry (pyproject.toml)
 googleapis-common-protos==1.75.1
     # via
@@ -72,7 +72,7 @@ h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-hex-service-kit @ git+https://github.com/portable-genai/hex-service-kit@4cdf92a32e364d6d2f638823ee2f7d0f8f8da731
+hex-service-kit @ git+https://github.com/portable-genai/hex-service-kit@5b52b44dc73fd6bb11125272fd2766d57ac9c705
     # via agent-registry (pyproject.toml)
 httpcore==1.0.9
     # via httpx
@@ -80,7 +80,7 @@ httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
     # via agent-registry (pyproject.toml)
-idna==3.18
+idna==3.19
     # via
     #   anyio
     #   httpx
@@ -92,7 +92,7 @@ proto-plus==1.28.3
     #   google-api-core
     #   google-cloud-alloydb
     #   google-cloud-firestore
-protobuf==7.35.1
+protobuf==7.36.0
     # via
     #   google-api-core
     #   google-cloud-alloydb
@@ -150,7 +150,7 @@ typing-inspection==0.4.4
     #   pydantic
 urllib3==2.7.0
     # via requests
-uvicorn==0.52.3
+uvicorn==0.52.4
     # via agent-registry (pyproject.toml)
 uvloop==0.22.1
     # via uvicorn
