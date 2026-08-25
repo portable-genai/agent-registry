@@ -2,7 +2,7 @@
 
 Catalog identity: **A3** (group ``hrz``). The system of record for *which* agents exist,
 *who* owns them, *what* they are entitled to do, and *how* peers discover and talk to them
-(A2A v1.0 + MCP 2025-11-25). Registering every agent here is what **kills shadow AI**
+(A2A v1.0 + MCP 2026-07-28). Registering every agent here is what **kills shadow AI**
 (dependency rule **R4**): an agent that is not in the registry is not governed, not
 discoverable, and not allowed to run on the platform.
 

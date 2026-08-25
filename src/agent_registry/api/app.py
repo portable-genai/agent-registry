@@ -95,7 +95,7 @@ app = FastAPI(
     version="0.1.0",
     description=(
         "Governed catalog/gallery of agents for the Horizon platform — identity, "
-        "ownership, scoped entitlements, and A2A v1.0 + MCP 2025-11-25 discovery. "
+        "ownership, scoped entitlements, and A2A v1.0 + MCP 2026-07-28 discovery. "
         "GCP region configurable; default us-central1."
     ),
     lifespan=_lifespan,
