@@ -16,6 +16,7 @@ export PYTHONPATH=src
 | `demo_selftest.py` | Runs the walkthrough unattended and validates every live transcript outcome. |
 | `portability_demo.py` | Bounded proof of exact profiles, deterministic local behavior, managed construction and fail-fast exit seams. |
 | `rename_fork.py` | Dry-run-first mechanical rename for an institutional fork. |
+| `lock.py` | Compiles both lockfiles and puts the header back, because `uv pip compile` REPLACES the output file: it writes its own two-line provenance comment and destroys the `tag = commit` map the pin tests check against. `make lock` runs this rather than uv directly. |
 
 ## Guided, presenter-controlled walkthrough (recommended)
 
