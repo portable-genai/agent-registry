@@ -61,7 +61,13 @@ portability: portability-demo ## Standard fleet alias for the executable portabi
 portability-demo: ## Run the bounded executable portability proof.
 	HRZ_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/portability_demo.py
 
-check: lint typecheck test eval demo-selftest portability-demo ## Full offline quality gate.
+plugin: ## Render the Agent Plugins 1.0.0 directory from this repo's own declarations.
+	python scripts/render_plugin.py --dest dist/plugin
+
+mcp-serve: ## Serve the read-only discovery catalog over MCP 2026-07-28 (stdio).
+	python -m agent_registry.mcp
+
+check: lint typecheck test eval demo-selftest portability-demo plugin ## Full offline quality gate.
 
 docker-build: ## Build the container image.
 	docker build -t $(IMAGE) .
