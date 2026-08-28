@@ -1,9 +1,9 @@
 # Copy to terraform.tfvars and fill in. Only project_id is required.
 project_id      = "my-gcp-project"
 backend         = "alloydb" # or "firestore"
-region          = "us-central1"
-allowed_regions = ["us-central1"]
-container_image = "us-central1-docker.pkg.dev/my-gcp-project/hrz/agent-registry:0.1.0"
+region          = "asia-southeast1"
+allowed_regions = ["asia-southeast1"]
+container_image = "asia-southeast1-docker.pkg.dev/my-gcp-project/hrz/agent-registry:0.1.0"
 public_service_url        = "https://registry-REPLACE.run.app"
 service_audience          = "https://registry-REPLACE.run.app"
 caller_service_accounts = [

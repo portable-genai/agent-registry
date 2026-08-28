@@ -8,7 +8,7 @@ Two ways to demo Hrz3, the governed catalog/gallery of agents for the Horizon pl
   version-bump upsert, retire, the unowned-card shadow-AI signal), and the onprem fail-fast.
   Runs **fully offline** (SQLite catalog, no Google Cloud, no API key, no emulator).
 - **Demo B - GCP managed catalog:** the same REST contract served from Cloud Run against a
-  real **AlloyDB** (or **Firestore**) catalog in `us-central1`, exercised with curl.
+  real **AlloyDB** (or **Firestore**) catalog in `asia-southeast1`, exercised with curl.
 
 > The agent cards in this demo are **synthetic and FICTIONAL**. Do not register cards that
 > embed secrets or real production endpoints without your own security sign-off.
@@ -25,7 +25,7 @@ CLI- and curl-based - there is no browser / Playwright step.
 | `git` | yes | yes | clone the repo |
 | **Python 3.12+** | yes | yes | the package pins `>=3.12` (the repo `.venv` uses 3.14) |
 | `curl` (and optionally `jq`) | yes | yes | exercise the REST endpoints |
-| A GCP project + `gcloud` | no | yes | billing enabled; `us-central1` available |
+| A GCP project + `gcloud` | no | yes | billing enabled; `asia-southeast1` available |
 | Terraform | no | yes | provisions AlloyDB/Firestore, Cloud Run, CMEK, VPC |
 | Cloud KMS key (regional) | no | yes | CMEK; set `HRZ_REGISTRY_KMS_KEY` |
 
@@ -114,7 +114,7 @@ rm -f "$HRZ_REGISTRY_LOCAL_DB"
 agent-registry register --card '{
   "name": "compliance-advisory",
   "description": "Rsk1 Compliance Assistant (FICTIONAL).",
-  "url": "https://compliance-advisory.us-central1.example/a2a",
+  "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.2.0",
   "provider": "compliance-advisory",
   "skills": [{"id": "answer", "name": "Grounded compliance Q&A", "description": "Cited answers."}],
@@ -144,7 +144,7 @@ curl -s localhost:8083/.well-known/agent-card.json | jq      # Hrz3's own card
 curl -s -X POST localhost:8083/v1/agents -H 'content-type: application/json' -d '{
   "name": "guardrail-gateway",
   "description": "Horizon guardrail gateway (FICTIONAL).",
-  "url": "https://guardrail-gateway.us-central1.example/a2a",
+  "url": "https://guardrail-gateway.asia-southeast1.example/a2a",
   "version": "0.9.0",
   "provider": "agent-guardrail-gateway",
   "skills": [{"id": "screen", "name": "Screen prompt", "description": "Block / allow / redact."}],
@@ -157,7 +157,7 @@ curl -s localhost:8083/v1/agents/guardrail-gateway/card | jq # A2A passthrough
 
 ---
 
-## 3. Demo B - GCP managed catalog (`us-central1`)
+## 3. Demo B - GCP managed catalog (`asia-southeast1`)
 
 Shows the **same REST contract** served from Cloud Run against a real managed catalog
 (AlloyDB or Firestore). Use [`infra/terraform/README.md`](infra/terraform/README.md) for the
@@ -172,7 +172,7 @@ pip install -e ".[gcp,dev]"                 # adds the AlloyDB connector / SQLAl
 export GOOGLE_CLOUD_PROJECT=your-sg-project
 export HRZ_REGISTRY_PROFILE=gcp
 export HRZ_REGISTRY_BACKEND=alloydb         # or: firestore
-export HRZ_REGISTRY_KMS_KEY="projects/.../locations/us-central1/keyRings/.../cryptoKeys/..."
+export HRZ_REGISTRY_KMS_KEY="projects/.../locations/asia-southeast1/keyRings/.../cryptoKeys/..."
 gcloud auth application-default login
 ```
 
@@ -185,7 +185,7 @@ terraform apply && cd ../..
 export HRZ_REGISTRY_ALLOYDB_URI="$(terraform -chdir=infra/terraform output -raw alloydb_instance)"
 ```
 
-Region defaults to `us-central1` and is pinned at deploy time through the reviewed allowlist; the catalog is
+Region defaults to `asia-southeast1` and is pinned at deploy time through the reviewed allowlist; the catalog is
 CMEK-encrypted and reached over a private IP / VPC connector.
 
 ### 3.3 Run and show
@@ -205,7 +205,7 @@ Then exercise the same endpoints against the managed catalog:
 curl -s -X POST localhost:8083/v1/agents -H 'content-type: application/json' -d '{
   "name": "kyc-doc-extractor",
   "description": "Doc1 KYC document extractor (FICTIONAL).",
-  "url": "https://kyc-doc-extractor.us-central1.example/a2a",
+  "url": "https://kyc-doc-extractor.asia-southeast1.example/a2a",
   "version": "2.0.0",
   "provider": "cdd-sow-research",
   "skills": [{"id": "extract", "name": "Extract fields", "description": "Cited field extraction."}],
@@ -225,7 +225,7 @@ Against a deployed Cloud Run service, point curl at the service URL instead:
 **What to highlight:** the AgentCard wire shape (six A2A fields) is byte-for-byte identical
 across `local` and `gcp` - only the adapter behind `AgentRegistryPort` changes; governance
 (owner / lifecycle / scopes) is additive metadata a plain A2A peer ignores; everything stays
-in `us-central1` with CMEK ([README "Deployment profiles"](README.md#deployment-profiles)).
+in `asia-southeast1` with CMEK ([README "Deployment profiles"](README.md#deployment-profiles)).
 
 ---
 
@@ -262,4 +262,4 @@ in `us-central1` with CMEK ([README "Deployment profiles"](README.md#deployment-
 **Stop / clean up:** Ctrl-C `make run`. The guided script (`registry_demo.py`) uses a temp
 catalog it removes on exit - it never touches `~/.agent_registry/local.db`. For GCP, scale
 the Cloud Run service to zero or `terraform destroy`; the catalog data is CMEK-encrypted and
-stays in `us-central1`. `make clean` removes local caches/artefacts.
+stays in `asia-southeast1`. `make clean` removes local caches/artefacts.

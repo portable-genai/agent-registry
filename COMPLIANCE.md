@@ -38,7 +38,7 @@ adapters under `src/agent_registry/adapters/`.
 | Rule | Statement | Control in this repo | Where |
 |---|---|---|---|
 | **R1** | Pinned interop standards | A2A v1.0 + MCP 2026-07-28; `governance.protocols` records what each agent speaks | `README` (interop), `models.py` (`InteropProtocol`) |
-| **R2** | Region pinned for residency | The selected region is used across the store, KMS and runtime; default `us-central1`, and a region outside `allowed_regions` fails at plan time and at process start | `config/settings.yaml`, `src/agent_registry/config.py`, `infra/terraform/variables.tf`, `infra/terraform/org_policy.tf` |
+| **R2** | Region pinned for residency | The selected region is used across the store, KMS and runtime; default `asia-southeast1`, and a region outside `allowed_regions` fails at plan time and at process start | `config/settings.yaml`, `src/agent_registry/config.py`, `infra/terraform/variables.tf`, `infra/terraform/org_policy.tf` |
 | **R3** | Lazy SDK imports / SDK-free offline path | All google-cloud imports are lazy; the `local` path imports no google-cloud package | `adapters/gcp/*` (lazy), `adapters/local/*`, `tests/test_contract.py` |
 | **R4** | Kill shadow AI | Every agent must publish an `AgentCard` with an `owner` before it is discoverable; unregistered agents are invisible to orchestrators | `models.py` (`Ownership`), `README` (Governance mapping) |
 | **R5** | Eval / quality gate in CI | The offline eval gate runs in CI and blocks on failure | `eval/run_eval.py`, `.github/workflows/ci.yaml` |

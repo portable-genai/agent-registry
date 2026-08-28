@@ -14,10 +14,10 @@
 # SQLite, but the loopback-dev openings that `local` is granted are withheld.
 
 project_id: ${GOOGLE_CLOUD_PROJECT:-your-gcp-project}
-region: ${GCP_REGION:-us-central1}         # selected at deploy; must match Terraform
+region: ${GCP_REGION:-asia-southeast1}         # selected at deploy; must match Terraform
 # Residency allowlist (comma separated). Mirrors the Terraform variable of the same name:
 # a region outside it fails at process start, exactly as terraform plan fails.
-allowed_regions: ${HRZ_REGISTRY_ALLOWED_REGIONS:-us-central1}
+allowed_regions: ${HRZ_REGISTRY_ALLOWED_REGIONS:-asia-southeast1}
 profile: ${HRZ_REGISTRY_PROFILE:-}         # gcp | local | onprem; unset = nobody chose
 backend: ${HRZ_REGISTRY_BACKEND:-alloydb}  # alloydb | firestore (gcp profile only)
 kms_key: ${HRZ_REGISTRY_KMS_KEY:-}         # regional Cloud KMS key for CMEK
@@ -38,7 +38,7 @@ registry:
   release_redteam_categories: ${HRZ_RELEASE_REDTEAM_CATEGORIES:-}
 
 alloydb:
-  instance_uri: ${HRZ_REGISTRY_ALLOYDB_URI:-}    # projects/.../locations/${GCP_REGION:-us-central1}/clusters/.../instances/...
+  instance_uri: ${HRZ_REGISTRY_ALLOYDB_URI:-}    # projects/.../locations/${GCP_REGION:-asia-southeast1}/clusters/.../instances/...
   database: agent_registry
   user: registry_app
   ip_type: PRIVATE

@@ -12,7 +12,7 @@ adapter family the :class:`~agent_registry.container.Container` binds:
   the client library imports.
 * ``onprem`` : fail-fast Google Distributed Cloud migration placeholders.
 
-The GCP region is configurable and defaults to ``us-central1``. Residency is enforced in three
+The GCP region is configurable and defaults to ``asia-southeast1``. Residency is enforced in three
 places from the same allowlist: ``terraform plan`` rejects a ``region`` outside
 ``allowed_regions`` (``infra/terraform/variables.tf``), Org Policy ``gcp.resourceLocations``
 refuses resources elsewhere in the project (``infra/terraform/org_policy.tf``), and
@@ -43,7 +43,7 @@ from hex_service_kit.netdefaults import EnvSetting, read_env_setting
 
 from .envread import setting_or_default
 
-REGION = "us-central1"
+REGION = "asia-southeast1"
 DEFAULT_ALLOWED_REGIONS: tuple[str, ...] = (REGION,)
 
 #: The one environment variable that names the profile. Only :func:`resolve_profile` may read
