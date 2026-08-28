@@ -57,11 +57,11 @@ def settings() -> Settings:
     return Settings.from_dict(
         {
             "project_id": "test-project",
-            "region": "us-central1",
+            "region": "asia-southeast1",
             "profile": "local",
             "registry": {
                 "name": "agent-registry",
-                "public_url": "https://agent-registry.us-central1.run.app",
+                "public_url": "https://agent-registry.asia-southeast1.run.app",
                 "version": "0.1.0",
             },
             "local": {"db_path": ":memory:"},

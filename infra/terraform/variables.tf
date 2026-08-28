@@ -8,7 +8,7 @@ variable "project_id" {
 
 variable "allowed_regions" {
   type        = list(string)
-  default     = ["us-central1"]
+  default     = ["asia-southeast1"]
   description = "Residency-approved deployment regions."
 
   validation {
@@ -19,7 +19,7 @@ variable "allowed_regions" {
 
 variable "region" {
   type        = string
-  default     = "us-central1"
+  default     = "asia-southeast1"
   description = "Deployment region, validated against allowed_regions."
 
   validation {
@@ -41,7 +41,7 @@ variable "backend" {
 
 variable "container_image" {
   type        = string
-  default     = "us-central1-docker.pkg.dev/REPLACE_WITH_PROJECT/hrz/agent-registry:0.1.0"
+  default     = "asia-southeast1-docker.pkg.dev/REPLACE_WITH_PROJECT/hrz/agent-registry:0.1.0"
   description = "Fully-qualified image for the Cloud Run service."
 }
 

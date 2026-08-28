@@ -20,7 +20,7 @@ Key guides: [demo](DEMO.md), [adoption](docs/ADOPTING.md),
 
 - **Python 3.12**, **FastAPI + uvicorn**, full type hints, `from __future__ import annotations`, ruff-clean.
 - **Region selected at deployment**, validated against a residency allowlist, and defaulted
-  to `us-central1`.
+  to `asia-southeast1`.
 - **Three deployment profiles** behind one port: `gcp` (managed AlloyDB / Firestore),
   `local` (a WORKING offline SQLite catalog, SDK-free), and `onprem` (fail-fast Google
   Distributed Cloud migration target). `local` runs the whole catalog with **no Google
@@ -99,7 +99,7 @@ sees only these and ignores the rest:
 {
   "name": "compliance-advisory",
   "description": "Rsk1 Compliance Assistant, grounded RAG over MAS/HKMA/APRA/FSA.",
-  "url": "https://compliance-advisory.us-central1.example/a2a",
+  "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.0.0",
   "provider": "compliance-advisory",
   "skills": [
@@ -227,7 +227,7 @@ export HRZ_REGISTRY_LOCAL_DB=/tmp/hrz-registry.db   # the SQLite catalog file (t
 agent-registry register --card '{
   "name": "compliance-advisory",
   "description": "Rsk1 Compliance Assistant",
-  "url": "https://compliance-advisory.us-central1.example/a2a",
+  "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.0.0",
   "provider": "compliance-advisory",
   "skills": [{"id":"answer","name":"Grounded compliance Q&A","description":"Cited answers."}]
@@ -254,7 +254,7 @@ curl localhost:8083/.well-known/agent-card.json | jq
 curl -X POST localhost:8083/v1/agents -H 'content-type: application/json' -d '{
   "name": "compliance-advisory",
   "description": "Rsk1 Compliance Assistant",
-  "url": "https://compliance-advisory.us-central1.example/a2a",
+  "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.0.0",
   "provider": "compliance-advisory",
   "skills": [{"id":"answer","name":"Grounded compliance Q&A","description":"Cited answers."}]
@@ -341,12 +341,12 @@ red-team categories, with no unresolved review. The Hrz5 reviewer-only approval 
 | Setting | Env override | Default |
 |---|---|---|
 | `project_id` | `GOOGLE_CLOUD_PROJECT` | `your-gcp-project` |
-| `region` | `GCP_REGION` | `us-central1` |
+| `region` | `GCP_REGION` | `asia-southeast1` |
 | `profile` | `HRZ_REGISTRY_PROFILE` | _empty_ (no default anywhere; dev/CI set `local`, production sets `gcp`, both explicitly) |
 | `local.db_path` | `HRZ_REGISTRY_LOCAL_DB` | _empty_ (=> `~/.agent_registry/local.db`) |
 | `backend` | `HRZ_REGISTRY_BACKEND` | `alloydb` (`alloydb` \| `firestore`) |
 | `kms_key` | `HRZ_REGISTRY_KMS_KEY` | _empty_ (regional CMEK key under gcp) |
-| `registry.public_url` | `HRZ_REGISTRY_PUBLIC_URL` | `https://agent-registry.us-central1.run.app` |
+| `registry.public_url` | `HRZ_REGISTRY_PUBLIC_URL` | `https://agent-registry.asia-southeast1.run.app` |
 | `registry.quality_url` | `HRZ_QUALITY_URL` | _empty_ (required by `gcp` release) |
 | `registry.observability_url` | `HRZ_OBSERVABILITY_URL` | _empty_ (required by `gcp` release) |
 | `alloydb.instance_uri` | `HRZ_REGISTRY_ALLOYDB_URI` | _empty_ |
@@ -378,18 +378,18 @@ Terraform.
 ## Infrastructure (`infra/terraform/`)
 
 Region-aware infrastructure with `var.region` validated against `var.allowed_regions`
-(default `us-central1`). The module provisions:
+(default `asia-southeast1`). The module provisions:
 
-- **Cloud Run** v2 service (`agent-registry`, region `us-central1`), ingress
+- **Cloud Run** v2 service (`agent-registry`, region `asia-southeast1`), ingress
   internal + load balancer, min instances 1, CMEK-encrypted, running as a dedicated
   least-privilege service account.
 - **AlloyDB** cluster + primary instance (private IP, regional, CMEK), the catalog store,
-  **or** a **Firestore** Native-mode database in `us-central1` (toggle with
+  **or** a **Firestore** Native-mode database in `asia-southeast1` (toggle with
   `var.backend`).
 - **IAM / Workload Identity**: a runtime service account with only the AlloyDB client /
   Firestore user roles it needs; Cloud Run uses the service identity (Workload Identity), no
   keys.
-- **CMEK**: a regional Cloud KMS key ring + key in `us-central1`, granted to the AlloyDB
+- **CMEK**: a regional Cloud KMS key ring + key in `asia-southeast1`, granted to the AlloyDB
   / Firestore and Cloud Run service agents.
 
 ```bash
@@ -408,13 +408,13 @@ See [`infra/terraform/README.md`](infra/terraform/README.md) for variables and o
 flowchart LR
   root["agent-registry/"]
   root --> src["src/agent_registry/"]
-  root --> cfg["config/settings.yaml<br/># adapter bindings + concrete us-central1 values"]
+  root --> cfg["config/settings.yaml<br/># adapter bindings + concrete asia-southeast1 values"]
   root --> tests["tests/<br/># offline pytest suite"]
   root --> evald["eval/run_eval.py<br/># offline promotion gate"]
   root --> infra["infra/terraform/<br/># Cloud Run + AlloyDB/Firestore + IAM/WIF + CMEK"]
   root --> meta["Dockerfile · Makefile · pyproject.toml<br/>.github/workflows/ci.yaml # ruff + mypy + pytest + eval<br/>LICENSE (Apache-2.0)"]
 
-  src --> srcfiles["__init__.py # package: Hrz3 catalog system identity<br/>config.py # Settings (us-central1 pinned) + ${ENV:-default}<br/>models.py # AgentCard / AgentSkill / Ownership / Lifecycle<br/>cards.py # AgentCard &lt;-&gt; SPEC §6 JSON (single source of truth)<br/>schemas.py # Pydantic wire contract<br/>self_card.py # the registry's own AgentCard<br/>container.py # profile -&gt; adapter binding"]
+  src --> srcfiles["__init__.py # package: Hrz3 catalog system identity<br/>config.py # Settings (asia-southeast1 pinned) + ${ENV:-default}<br/>models.py # AgentCard / AgentSkill / Ownership / Lifecycle<br/>cards.py # AgentCard &lt;-&gt; SPEC §6 JSON (single source of truth)<br/>schemas.py # Pydantic wire contract<br/>self_card.py # the registry's own AgentCard<br/>container.py # profile -&gt; adapter binding"]
   src --> ports["ports/registry.py # AgentRegistryPort Protocol"]
   src --> adapters["adapters/"]
   src --> apiapp["api/app.py # FastAPI app: SPEC §6 endpoints"]

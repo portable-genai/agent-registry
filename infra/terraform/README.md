@@ -1,7 +1,7 @@
 # Hrz3 Agent Registry: Terraform
 
 Provisions the GCP footprint for **Hrz3 `agent-registry`**. The region is configurable,
-defaults to **`us-central1`**, and must be in `allowed_regions`. The catalog store backend is
+defaults to **`asia-southeast1`**, and must be in `allowed_regions`. The catalog store backend is
 selectable (`alloydb` default, or `firestore`).
 
 ## What it creates
@@ -10,9 +10,9 @@ selectable (`alloydb` default, or `firestore`).
 |---|---|
 | **Cloud Run** | `google_cloud_run_v2_service.registry`: v2 service `agent-registry`, internal+LB ingress, min 1 instance, **CMEK-encrypted**, runs as the dedicated runtime SA, `:8083`, `/healthz` probes. |
 | **AlloyDB** (default) | Regional cluster + primary instance, **private IP only**, **CMEK**; IAM DB user for the runtime SA. Plus VPC, private-services access and a Serverless VPC connector. |
-| **Firestore** (alt.) | `google_firestore_database` Native mode in `us-central1` with **CMEK** and delete protection. |
+| **Firestore** (alt.) | `google_firestore_database` Native mode in `asia-southeast1` with **CMEK** and delete protection. |
 | **IAM / Workload Identity** | A least-privilege runtime service account; Cloud Run uses it as its identity, **no exported keys**. Scoped to `alloydb.client`+`alloydb.databaseUser` (or `datastore.user`), token creation and metric writes. |
-| **CMEK** | Regional Cloud KMS key ring + key in `us-central1` (90-day rotation), granted to the AlloyDB / Firestore and Cloud Run service agents. |
+| **CMEK** | Regional Cloud KMS key ring + key in `asia-southeast1` (90-day rotation), granted to the AlloyDB / Firestore and Cloud Run service agents. |
 | **Org Policy** | `gcp.resourceLocations` allowlist derived from `allowed_regions`, `iam.disableServiceAccountKeyCreation` enforced, optional domain-restricted sharing. |
 | **VPC Service Controls** | A regular perimeter around the managed stores, created DRY RUN FIRST (`use_explicit_dry_run_spec`); enforcement is the separate `vpc_sc_enforce` opt-in. |
 | **WORM audit logs** | Regional, CMEK-encrypted bucket with a LOCKED retention policy plus a project log sink (admin activity, data access, policy) with a unique writer identity. |
@@ -35,7 +35,7 @@ Build and push the image to Artifact Registry first, then pass it in:
 ```bash
 terraform apply \
   -var="project_id=my-gcp-project" \
-  -var="container_image=us-central1-docker.pkg.dev/my-gcp-project/hrz/agent-registry:0.1.0"
+  -var="container_image=asia-southeast1-docker.pkg.dev/my-gcp-project/hrz/agent-registry:0.1.0"
 ```
 
 ## Variables
@@ -43,8 +43,8 @@ terraform apply \
 | Name | Default | Notes |
 |---|---|---|
 | `project_id` | n/a (**required**) | The only per-tenant input. |
-| `region` | `us-central1` | Selected regional deployment location. |
-| `allowed_regions` | `["us-central1"]` | Governance-approved residency locations. |
+| `region` | `asia-southeast1` | Selected regional deployment location. |
+| `allowed_regions` | `["asia-southeast1"]` | Governance-approved residency locations. |
 | `backend` | `alloydb` | `alloydb` \| `firestore`. |
 | `container_image` | placeholder Artifact Registry path | Override with your pushed image. |
 | `alloydb_password` | `""` (sensitive) | Optional initial superuser password; IAM auth is used otherwise. |

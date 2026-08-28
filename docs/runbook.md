@@ -1,7 +1,7 @@
 # Runbook: Hrz3 Agent Registry & Governance
 
 Operational notes for deploying and running Hrz3 (`agent-registry`) on Cloud Run in
-`us-central1`. This is a reference build; adapt it to your own change-management and
+`asia-southeast1`. This is a reference build; adapt it to your own change-management and
 platform sign-off before any live use. Hrz3 is a **control-plane service**: a governed
 catalog with deterministic invariants (idempotent upsert keyed on `name`, no floating
 endpoints). It has **no end-user UI** and **no grounded LLM / ADK agent**, so there is no
@@ -11,7 +11,7 @@ catalog correctness, not generation quality.
 ## 1. Deploy
 
 ```bash
-# 1. Provision infra. Region defaults to us-central1 and must be in allowed_regions.
+# 1. Provision infra. Region defaults to asia-southeast1 and must be in allowed_regions.
 cd infra/terraform
 cp terraform.tfvars.example terraform.tfvars   # set project_id; pick backend (alloydb | firestore)
 terraform init -input=false && terraform plan
@@ -24,9 +24,9 @@ export HRZ_REGISTRY_KMS_KEY="$(terraform output -raw cmek_key)"
 export HRZ_REGISTRY_BACKEND="$(terraform output -raw backend)"        # alloydb | firestore
 export HRZ_REGISTRY_ALLOYDB_URI="$(terraform output -raw alloydb_instance)"   # empty on firestore
 
-# 3. Build and push the image, then point Cloud Run at it (Artifact Registry, us-central1).
+# 3. Build and push the image, then point Cloud Run at it (Artifact Registry, asia-southeast1).
 make docker-build
-terraform apply -var="container_image=us-central1-docker.pkg.dev/<project>/hrz/agent-registry:0.1.0"
+terraform apply -var="container_image=asia-southeast1-docker.pkg.dev/<project>/hrz/agent-registry:0.1.0"
 ```
 
 The container image selects the secure `gcp` profile explicitly (`HRZ_REGISTRY_PROFILE=gcp` in
@@ -48,7 +48,7 @@ service.
 
 ## 2. Region selection and fail-fast
 
-The Terraform `region` variable defaults to `us-central1` and must be present in
+The Terraform `region` variable defaults to `asia-southeast1` and must be present in
 `allowed_regions`. The Cloud Run service, AlloyDB cluster (or Firestore database), and CMEK
 key ring are created in that one selected region. Set `GCP_REGION` to the same value at
 runtime and confirm the `well_known_card_url` output resolves to that regional deployment.
