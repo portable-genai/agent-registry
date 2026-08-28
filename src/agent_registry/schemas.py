@@ -108,7 +108,7 @@ class ReleaseRequestModel(BaseModel):
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     profile: str = "local"
-    region: str = "us-central1"
+    region: str = "asia-southeast1"
     demo_only: bool = True
     production_ready: bool = False
 
