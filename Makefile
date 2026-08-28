@@ -11,7 +11,7 @@ export HRZ_REGISTRY_PROFILE ?= local
 # The no-auth local dev server binds loopback; override deliberately to expose it.
 API_HOST ?= 127.0.0.1
 
-.PHONY: help venv install run lint format typecheck test eval check smoke demo demo-selftest portability-demo docker-build clean
+.PHONY: help venv install lock run lint format typecheck test eval check smoke demo demo-selftest portability-demo docker-build clean
 
 help: ## Show this help.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -23,6 +23,9 @@ venv: ## Create a local virtualenv in .venv.
 
 install: ## Install the package with dev extras (core deps only, no GCP SDKs).
 	$(PY) -m pip install -e ".[dev]"
+
+lock: ## Recompile both lockfiles from pyproject.toml and restore the tag = commit headers.
+	$(PY) scripts/lock.py
 
 run: ## Run the service locally (local profile) on $(PORT).
 	HRZ_REGISTRY_PROFILE=local uvicorn agent_registry.api.app:app \
