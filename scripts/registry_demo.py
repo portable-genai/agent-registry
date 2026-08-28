@@ -215,7 +215,7 @@ def _run_demo(out_path: str | None, demo_db: str) -> None:
         f"Profile : local (SQLite catalog, SDK-free; temp file {demo_db})\n"
         "Surfaces: REST API (in-process FastAPI TestClient) + CLI (agent-registry)\n"
         "Data    : synthetic, FICTIONAL Horizon-platform agents\n"
-        f"Region  : {settings.region} (configurable; defaults to us-central1)"
+        f"Region  : {settings.region} (configurable; defaults to asia-southeast1)"
     )
 
     # The in-process client presents itself as a LOOPBACK peer, which is what an offline demo
