@@ -19,28 +19,28 @@ terraform apply
 
 # 2. Export the outputs the running service consumes (settings.yaml resolves them).
 export GOOGLE_CLOUD_PROJECT=my-gcp-project
-export HRZ_REGISTRY_PUBLIC_URL="$(terraform output -raw service_url)"
-export HRZ_REGISTRY_KMS_KEY="$(terraform output -raw cmek_key)"
-export HRZ_REGISTRY_BACKEND="$(terraform output -raw backend)"        # alloydb | firestore
-export HRZ_REGISTRY_ALLOYDB_URI="$(terraform output -raw alloydb_instance)"   # empty on firestore
+export AGENT_REGISTRY_PUBLIC_URL="$(terraform output -raw service_url)"
+export AGENT_REGISTRY_KMS_KEY="$(terraform output -raw cmek_key)"
+export AGENT_REGISTRY_BACKEND="$(terraform output -raw backend)"        # alloydb | firestore
+export AGENT_REGISTRY_ALLOYDB_URI="$(terraform output -raw alloydb_instance)"   # empty on firestore
 
 # 3. Build and push the image, then point Cloud Run at it (Artifact Registry, asia-southeast1).
 make docker-build
 terraform apply -var="container_image=asia-southeast1-docker.pkg.dev/<project>/hrz/agent-registry:0.1.0"
 ```
 
-The container image selects the secure `gcp` profile explicitly (`HRZ_REGISTRY_PROFILE=gcp` in
+The container image selects the secure `gcp` profile explicitly (`AGENT_REGISTRY_PROFILE=gcp` in
 the Dockerfile), so a shipped image never falls back to the no-auth SQLite profile; Terraform
 sets the same value on the Cloud Run service, along with
-`HRZ_REGISTRY_BACKEND=alloydb|firestore`. Outside the image, `local` remains the default
-whenever `HRZ_REGISTRY_PROFILE` is unset (`config/settings.yaml`, Makefile), which is what
+`AGENT_REGISTRY_BACKEND=alloydb|firestore`. Outside the image, `local` remains the default
+whenever `AGENT_REGISTRY_PROFILE` is unset (`config/settings.yaml`, Makefile), which is what
 keeps the offline gate SDK-free. No code above the adapter layer changes between profiles.
 
 **Service-to-service auth.** The catalog CRUD and per-agent resolution routes fail closed;
 `/healthz` and the public A2A discovery card stay open. Under `gcp` the service verifies a
-Google-signed OIDC ID token against `HRZ_REGISTRY_S2S_AUDIENCE` and checks the caller service
-account against `HRZ_REGISTRY_S2S_ALLOWED_CALLERS` (`403` if not allowed). Under `local` an
-optional shared secret in `HRZ_REGISTRY_S2S_TOKEN` is compared in constant time (unset means
+Google-signed OIDC ID token against `AGENT_REGISTRY_S2S_AUDIENCE` and checks the caller service
+account against `AGENT_REGISTRY_S2S_ALLOWED_CALLERS` (`403` if not allowed). Under `local` an
+optional shared secret in `AGENT_REGISTRY_S2S_TOKEN` is compared in constant time (unset means
 open for loopback dev; set to a secret means `401` without it; set to an empty value refuses
 every guarded route with a `503`, so a template that renders the secret to nothing fails
 loudly instead of accepting catalog writes unauthenticated). Set these before exposing the
@@ -61,7 +61,7 @@ loudly rather than quietly writing agent metadata abroad:
 2. The `gcp.resourceLocations` Org Policy (`infra/terraform/org_policy.tf`) refuses resource
    creation elsewhere in the project, including by hand in the console.
 3. The application refuses to load settings whose `region` is outside
-   `HRZ_REGISTRY_ALLOWED_REGIONS` (`ResidencyError` at process start). Terraform passes the
+   `AGENT_REGISTRY_ALLOWED_REGIONS` (`ResidencyError` at process start). Terraform passes the
    same list into the Cloud Run environment.
 
 Approving a new region therefore means one change to `allowed_regions` in tfvars, not a fork.
@@ -104,7 +104,7 @@ make check   # the full gate: ruff check + ruff format --check + mypy src + pyte
 ```
 
 `make check` is the CI gate (`.github/workflows/ci.yaml`) and runs entirely offline on the
-`local` profile with no Google Cloud SDKs installed. The CLI honours `HRZ_REGISTRY_PROFILE`;
+`local` profile with no Google Cloud SDKs installed. The CLI honours `AGENT_REGISTRY_PROFILE`;
 under `onprem` every command exits `2` with the migration message (see
 [`onprem-migration.md`](onprem-migration.md)).
 
@@ -112,9 +112,9 @@ under `onprem` every command exits `2` with the migration message (see
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `NotImplementedError` from a CLI command / the API | `HRZ_REGISTRY_PROFILE=onprem` with placeholder adapters | Set `HRZ_REGISTRY_PROFILE=local` (or `gcp`), or implement the on-prem adapter |
+| `NotImplementedError` from a CLI command / the API | `AGENT_REGISTRY_PROFILE=onprem` with placeholder adapters | Set `AGENT_REGISTRY_PROFILE=local` (or `gcp`), or implement the on-prem adapter |
 | CLI exits `2` on every command | Running under the `onprem` profile by design | Switch to `local` or `gcp`; `2` is the intended fail-fast |
-| `401` on `POST /v1/agents` | `HRZ_REGISTRY_S2S_TOKEN` set but no / wrong bearer token | Send `Authorization: Bearer <token>`, or unset the token for loopback dev |
-| `403` on catalog routes under `gcp` | Caller service account not in the allowlist | Add it to `HRZ_REGISTRY_S2S_ALLOWED_CALLERS` |
-| Rsk1 cannot resolve agents in `profile: platform` | `HRZ_REGISTRY_URL` not pointing at this service | Set it to the `service_url` output (defaults to `http://localhost:8083`) |
+| `401` on `POST /v1/agents` | `AGENT_REGISTRY_S2S_TOKEN` set but no / wrong bearer token | Send `Authorization: Bearer <token>`, or unset the token for loopback dev |
+| `403` on catalog routes under `gcp` | Caller service account not in the allowlist | Add it to `AGENT_REGISTRY_S2S_ALLOWED_CALLERS` |
+| Rsk1 cannot resolve agents in `profile: platform` | `AGENT_REGISTRY_URL` not pointing at this service | Set it to the `service_url` output (defaults to `http://localhost:8083`) |
 | A managed import fails under `local` | `[gcp]` extra not installed and a gcp branch was taken | Stay SDK-free on `local`, or `pip install -e ".[gcp]"` for the managed path |

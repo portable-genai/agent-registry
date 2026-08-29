@@ -3,7 +3,7 @@ under ``onprem``.
 
 These exercise the same exit-code contract the end-to-end smoke relies on: ``local`` returns
 a real artifact (exit 0), and ``onprem`` exits 2 with the migration message. The profile is
-selected via ``HRZ_REGISTRY_PROFILE`` exactly as in production.
+selected via ``AGENT_REGISTRY_PROFILE`` exactly as in production.
 """
 
 from __future__ import annotations
@@ -27,9 +27,9 @@ _CARD = json.dumps(
 
 
 def test_local_register_then_get(tmp_path, monkeypatch, capsys) -> None:
-    monkeypatch.setenv("HRZ_REGISTRY_PROFILE", "local")
+    monkeypatch.setenv("AGENT_REGISTRY_PROFILE", "local")
     db = tmp_path / "cli.db"
-    monkeypatch.setenv("HRZ_REGISTRY_LOCAL_DB", str(db))
+    monkeypatch.setenv("AGENT_REGISTRY_LOCAL_DB", str(db))
 
     assert cli.main(["register", "--card", _CARD]) == 0
     out = capsys.readouterr().out
@@ -42,8 +42,8 @@ def test_local_register_then_get(tmp_path, monkeypatch, capsys) -> None:
 
 
 def test_local_list_returns_array(tmp_path, monkeypatch, capsys) -> None:
-    monkeypatch.setenv("HRZ_REGISTRY_PROFILE", "local")
-    monkeypatch.setenv("HRZ_REGISTRY_LOCAL_DB", str(tmp_path / "cli.db"))
+    monkeypatch.setenv("AGENT_REGISTRY_PROFILE", "local")
+    monkeypatch.setenv("AGENT_REGISTRY_LOCAL_DB", str(tmp_path / "cli.db"))
 
     cli.main(["register", "--card", _CARD])
     capsys.readouterr()
@@ -54,7 +54,7 @@ def test_local_list_returns_array(tmp_path, monkeypatch, capsys) -> None:
 
 
 def test_onprem_register_exits_2(monkeypatch, capsys) -> None:
-    monkeypatch.setenv("HRZ_REGISTRY_PROFILE", "onprem")
+    monkeypatch.setenv("AGENT_REGISTRY_PROFILE", "onprem")
     with pytest.raises(SystemExit) as exc:
         cli.main(["register", "--card", _CARD])
     assert exc.value.code == 2
@@ -63,14 +63,14 @@ def test_onprem_register_exits_2(monkeypatch, capsys) -> None:
 
 
 def test_onprem_list_exits_2(monkeypatch) -> None:
-    monkeypatch.setenv("HRZ_REGISTRY_PROFILE", "onprem")
+    monkeypatch.setenv("AGENT_REGISTRY_PROFILE", "onprem")
     with pytest.raises(SystemExit) as exc:
         cli.main(["list"])
     assert exc.value.code == 2
 
 
 def test_invalid_card_json_exits_1(monkeypatch) -> None:
-    monkeypatch.setenv("HRZ_REGISTRY_PROFILE", "local")
+    monkeypatch.setenv("AGENT_REGISTRY_PROFILE", "local")
     with pytest.raises(SystemExit) as exc:
         cli.main(["register", "--card", "{not json"])
     assert exc.value.code == 1

@@ -5,7 +5,7 @@
 # stage starts from the same digest-pinned slim base, copies only that virtualenv plus the
 # application source, runs as a dedicated non-root uid and carries no build toolchain.
 #
-# The image selects the SECURE profile explicitly (HRZ_REGISTRY_PROFILE=gcp): a shipped image
+# The image selects the SECURE profile explicitly (AGENT_REGISTRY_PROFILE=gcp): a shipped image
 # must not fall back to the no-auth SQLite laptop profile if the deployment forgets an env var.
 # The offline 'local' profile is a developer/test convention, driven from the Makefile.
 
@@ -46,7 +46,7 @@ ENV PYTHONUNBUFFERED=1 \
     VIRTUAL_ENV=/opt/venv \
     PATH=/opt/venv/bin:$PATH \
     PORT=8083 \
-    HRZ_REGISTRY_PROFILE=gcp
+    AGENT_REGISTRY_PROFILE=gcp
 
 WORKDIR /app
 
@@ -69,5 +69,5 @@ EXPOSE 8083
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD ["python", "-c", "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','8083')+'/healthz', timeout=2).status == 200 else 1)"]
 
-# Cloud Run sets $PORT; default to 8083 to match C1's HRZ_REGISTRY_URL default.
+# Cloud Run sets $PORT; default to 8083 to match C1's AGENT_REGISTRY_URL default.
 CMD ["sh", "-c", "exec uvicorn agent_registry.api.app:app --host 0.0.0.0 --port ${PORT:-8083}"]

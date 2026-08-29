@@ -24,7 +24,7 @@ if str(_REPO_ROOT) not in sys.path:
 # The dev / test default profile is ``local`` (the offline SQLite catalog). Set it before any
 # adapter module imports so the module-level ``api.app:app = create_app()`` builds the local
 # adapter rather than the gcp one (whose first store call would need the Google Cloud SDKs).
-os.environ.setdefault("HRZ_REGISTRY_PROFILE", "local")
+os.environ.setdefault("AGENT_REGISTRY_PROFILE", "local")
 
 from collections.abc import Iterator  # noqa: E402
 

@@ -22,7 +22,7 @@ to build a configuration whose region is outside ``allowed_regions`` here, so a 
 unapproved region.
 
 The profile itself is resolved in THREE states, not two: :func:`resolve_profile` is the only
-reader of ``HRZ_REGISTRY_PROFILE``, and it distinguishes unset (nobody chose), configured-empty
+reader of ``AGENT_REGISTRY_PROFILE``, and it distinguishes unset (nobody chose), configured-empty
 (a boot error), and ``local`` (someone chose the no-auth offline catalog). The distinction is load
 bearing because ``local`` is exactly the profile the S2S rule grants an opening to, so
 reading an absent variable as ``local`` turned a lost config map into a writable catalog. See
@@ -48,7 +48,7 @@ DEFAULT_ALLOWED_REGIONS: tuple[str, ...] = (REGION,)
 
 #: The one environment variable that names the profile. Only :func:`resolve_profile` may read
 #: it; ``tests/test_profile_single_source.py`` fails the build if another module does.
-_PROFILE_ENV = "HRZ_REGISTRY_PROFILE"
+_PROFILE_ENV = "AGENT_REGISTRY_PROFILE"
 
 #: Every profile that binds an adapter family. The comparison against it is EXACT and
 #: case-sensitive, so ``Local`` is a typo that refuses rather than a silent choice.
@@ -127,7 +127,7 @@ class ProfileChoice:
 def resolve_profile(declared: str = "", environ: Mapping[str, str] | None = None) -> ProfileChoice:
     """Read the profile once: absent inherits confinement, empty refuses, and values validate.
 
-    Three states, not two. ``HRZ_REGISTRY_PROFILE`` wins when it has a value, configured-empty
+    Three states, not two. ``AGENT_REGISTRY_PROFILE`` wins when it has a value, configured-empty
     refuses instead of inheriting a default, and an absent variable permits a non-blank
     ``profile:`` in the settings file to be the deliberate choice. When neither source names
     one, nobody chose, which is not the same input as choosing ``local``.
@@ -260,7 +260,7 @@ class Settings:
     local: LocalSettings = field(default_factory=LocalSettings)
     adapters: dict[str, dict[str, str]] = field(default_factory=dict)
     # Was the profile chosen DELIBERATELY, or merely inherited because nothing named one?
-    # ``from_dict`` sets this False when neither HRZ_REGISTRY_PROFILE nor a ``profile:`` value
+    # ``from_dict`` sets this False when neither AGENT_REGISTRY_PROFILE nor a ``profile:`` value
     # in the settings file is present. Direct construction is deliberate by definition (a
     # caller named the profile in code), so the default is True. Every posture RELAXATION
     # reads :attr:`exposure_profile` rather than :attr:`profile`, so an unconsented run does
@@ -292,7 +292,7 @@ class Settings:
         fs = raw.get("firestore", {}) or {}
         reg = raw.get("registry", {}) or {}
         loc = raw.get("local", {}) or {}
-        # The HRZ_REGISTRY_PROFILE env var wins over any value baked into ``raw`` so the
+        # The AGENT_REGISTRY_PROFILE env var wins over any value baked into ``raw`` so the
         # CLI / Makefile / CI can flip profiles without editing settings.yaml. Neither source
         # supplies a default: absent from both means nobody chose (see resolve_profile).
         choice = resolve_profile(str(raw.get("profile", "") or ""))
@@ -301,7 +301,7 @@ class Settings:
         if region not in allowed_regions:
             raise ResidencyError(
                 f"region '{region}' is outside the residency allowlist "
-                f"{list(allowed_regions)}; set allowed_regions (HRZ_REGISTRY_ALLOWED_REGIONS) "
+                f"{list(allowed_regions)}; set allowed_regions (AGENT_REGISTRY_ALLOWED_REGIONS) "
                 "to the approved regions before deploying there."
             )
         return cls(

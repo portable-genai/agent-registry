@@ -10,9 +10,9 @@ permissions:
   contents: read
 
 # The default profile is 'local' everywhere (the offline SQLite catalog; settings.yaml too).
-# Production sets HRZ_REGISTRY_PROFILE=gcp explicitly.
+# Production sets AGENT_REGISTRY_PROFILE=gcp explicitly.
 env:
-  HRZ_REGISTRY_PROFILE: local
+  AGENT_REGISTRY_PROFILE: local
 
 jobs:
   check:

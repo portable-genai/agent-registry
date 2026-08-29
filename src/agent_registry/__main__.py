@@ -2,9 +2,9 @@
 
 Reads ``API_HOST`` and ``PORT`` (default 8083). The bind default is fail-closed via the
 shared ``hex-service-kit`` commons: the no-auth ``local`` profile binds
-loopback unless ``HRZ_REGISTRY_ALLOW_INSECURE_DEMO=1`` explicitly opts into exposure;
+loopback unless ``AGENT_REGISTRY_ALLOW_INSECURE_DEMO=1`` explicitly opts into exposure;
 secure profiles keep the container-friendly ``0.0.0.0`` default (the deployed container
-runs ``HRZ_REGISTRY_PROFILE=gcp``, fronted by the platform).
+runs ``AGENT_REGISTRY_PROFILE=gcp``, fronted by the platform).
 
 The bind guard reads ``bind_profile``, not a raw environment read with its own ``local``
 default: this is the restriction half of the profile decision, so a run that never named a
@@ -26,7 +26,7 @@ def main() -> None:
     host = resolve_bind_host(
         resolve_profile().bind_profile,
         host_env="API_HOST",
-        insecure_demo_env="HRZ_REGISTRY_ALLOW_INSECURE_DEMO",
+        insecure_demo_env="AGENT_REGISTRY_ALLOW_INSECURE_DEMO",
     )
     uvicorn.run(
         "agent_registry.api.app:app",

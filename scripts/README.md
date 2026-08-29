@@ -39,7 +39,7 @@ It steps through, pausing for Enter each time:
    bumps in place, no duplicate row); retiring an agent (`lifecycle -> retired`) drops it
    from production discovery while it stays resolvable; the **unowned** card is the
    shadow-AI signal a platform owner triages.
-5. **Reversibility (P-02)** - the same command under `HRZ_REGISTRY_PROFILE=onprem` fails
+5. **Reversibility (P-02)** - the same command under `AGENT_REGISTRY_PROFILE=onprem` fails
    fast (exit 2) with the migration message.
 
 The REST calls run against an **in-process FastAPI `TestClient`** (no network, no running
@@ -57,7 +57,7 @@ make demo-selftest
 make portability-demo
 ```
 
-`make demo` runs the guided walkthrough (`HRZ_REGISTRY_PROFILE=local PYTHONPATH=src python
+`make demo` runs the guided walkthrough (`AGENT_REGISTRY_PROFILE=local PYTHONPATH=src python
 scripts/registry_demo.py`).
 
 ## Environment overrides
@@ -65,7 +65,7 @@ scripts/registry_demo.py`).
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `DEMO_AUTO=1` | off | don't wait for Enter - advance automatically (self-test / recording) |
-| `HRZ_REGISTRY_PROFILE` | `local` | the script forces `local`; it flips to `onprem` only for the step-5 fail-fast, then back |
+| `AGENT_REGISTRY_PROFILE` | `local` | the script forces `local`; it flips to `onprem` only for the step-5 fail-fast, then back |
 
 > The walkthrough embeds long AgentCard JSON and narration, so its E501 exception remains.
 > CI directly lints and executes the self-test, portability proof and rename utility.

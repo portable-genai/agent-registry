@@ -27,7 +27,7 @@ CLI- and curl-based - there is no browser / Playwright step.
 | `curl` (and optionally `jq`) | yes | yes | exercise the REST endpoints |
 | A GCP project + `gcloud` | no | yes | billing enabled; `asia-southeast1` available |
 | Terraform | no | yes | provisions AlloyDB/Firestore, Cloud Run, CMEK, VPC |
-| Cloud KMS key (regional) | no | yes | CMEK; set `HRZ_REGISTRY_KMS_KEY` |
+| Cloud KMS key (regional) | no | yes | CMEK; set `AGENT_REGISTRY_KMS_KEY` |
 
 Install/setup references (read these once):
 
@@ -50,7 +50,7 @@ python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"          # core + dev tooling (NO google-cloud-* packages)
 
 # Sanity-check the offline stack before presenting:
-export HRZ_REGISTRY_PROFILE=local
+export AGENT_REGISTRY_PROFILE=local
 make check                       # ruff + mypy + pytest + eval (all local, no cloud)
 ```
 
@@ -87,7 +87,7 @@ You step through, pressing Enter each time:
    bumps **in place**, no duplicate row); retiring an agent (`lifecycle -> retired`) drops it
    from production discovery while it stays resolvable; the **unowned** card is the shadow-AI
    signal a platform owner triages.
-5. **Reversibility (P-02)** - the same command under `HRZ_REGISTRY_PROFILE=onprem` fails fast
+5. **Reversibility (P-02)** - the same command under `AGENT_REGISTRY_PROFILE=onprem` fails fast
    (exit 2) with the migration message.
 
 **What to point at:** the `governance` block on each card (owner / lifecycle / scopes), the
@@ -106,9 +106,9 @@ DEMO_AUTO=1 PYTHONPATH=src python scripts/registry_demo.py registry_demo.json
 The same flow with the actual surfaces. **CLI** (the primary local artifact):
 
 ```bash
-export HRZ_REGISTRY_PROFILE=local
-export HRZ_REGISTRY_LOCAL_DB="${TMPDIR:-/tmp}/hrz-demo.db"   # pin a throwaway catalog
-rm -f "$HRZ_REGISTRY_LOCAL_DB"
+export AGENT_REGISTRY_PROFILE=local
+export AGENT_REGISTRY_LOCAL_DB="${TMPDIR:-/tmp}/hrz-demo.db"   # pin a throwaway catalog
+rm -f "$AGENT_REGISTRY_LOCAL_DB"
 
 # Publish (upsert) an AgentCard, then read it back from the catalog.
 agent-registry register --card '{
@@ -129,7 +129,7 @@ agent-registry get  compliance-advisory      # resolve one card
 agent-registry list                           # the whole gallery
 
 # Reversibility: the same command under onprem fails fast (exit 2), no traceback:
-HRZ_REGISTRY_PROFILE=onprem agent-registry list; echo "exit=$?"   # -> exit=2
+AGENT_REGISTRY_PROFILE=onprem agent-registry list; echo "exit=$?"   # -> exit=2
 ```
 
 `make smoke` runs the register-then-list flow in one step.
@@ -170,9 +170,9 @@ source .venv/bin/activate
 pip install -e ".[gcp,dev]"                 # adds the AlloyDB connector / SQLAlchemy / firestore
 
 export GOOGLE_CLOUD_PROJECT=your-sg-project
-export HRZ_REGISTRY_PROFILE=gcp
-export HRZ_REGISTRY_BACKEND=alloydb         # or: firestore
-export HRZ_REGISTRY_KMS_KEY="projects/.../locations/asia-southeast1/keyRings/.../cryptoKeys/..."
+export AGENT_REGISTRY_PROFILE=gcp
+export AGENT_REGISTRY_BACKEND=alloydb         # or: firestore
+export AGENT_REGISTRY_KMS_KEY="projects/.../locations/asia-southeast1/keyRings/.../cryptoKeys/..."
 gcloud auth application-default login
 ```
 
@@ -182,7 +182,7 @@ gcloud auth application-default login
 cd infra/terraform && terraform init -input=false && terraform plan   # review (CMEK + VPC)
 terraform apply && cd ../..
 # Export the connection facts the app reads (see infra/terraform/README.md):
-export HRZ_REGISTRY_ALLOYDB_URI="$(terraform -chdir=infra/terraform output -raw alloydb_instance)"
+export AGENT_REGISTRY_ALLOYDB_URI="$(terraform -chdir=infra/terraform output -raw alloydb_instance)"
 ```
 
 Region defaults to `asia-southeast1` and is pinned at deploy time through the reviewed allowlist; the catalog is
@@ -253,10 +253,10 @@ in `asia-southeast1` with CMEK ([README "Deployment profiles"](README.md#deploym
 | Symptom | Fix |
 |---------|-----|
 | `python3.12: command not found` | Install Python 3.12+; the package pins `>=3.12`. |
-| `ModuleNotFoundError: sqlalchemy` (or `google.cloud.*`) on `make run` | You are on `PROFILE=gcp` without the `[gcp]` extra. Use `HRZ_REGISTRY_PROFILE=local` for Demo A, or `pip install -e ".[gcp,dev]"` for Demo B. |
+| `ModuleNotFoundError: sqlalchemy` (or `google.cloud.*`) on `make run` | You are on `PROFILE=gcp` without the `[gcp]` extra. Use `AGENT_REGISTRY_PROFILE=local` for Demo A, or `pip install -e ".[gcp,dev]"` for Demo B. |
 | `error: '...' is not available under profile 'onprem'` (exit 2) | Expected on `onprem` (fail-fast). Use `local` (Demo A) or `gcp` (Demo B). |
 | Port 8083 already in use | `make run PORT=9000` and curl `localhost:9000`. |
-| `agent-registry list` shows stale cards locally | The local catalog persists at `~/.agent_registry/local.db`; set `HRZ_REGISTRY_LOCAL_DB` to a throwaway path (the demo script uses a temp file it deletes). |
+| `agent-registry list` shows stale cards locally | The local catalog persists at `~/.agent_registry/local.db`; set `AGENT_REGISTRY_LOCAL_DB` to a throwaway path (the demo script uses a temp file it deletes). |
 | GCP deploy / region / VPC errors | See [`infra/terraform/README.md`](infra/terraform/README.md). |
 
 **Stop / clean up:** Ctrl-C `make run`. The guided script (`registry_demo.py`) uses a temp

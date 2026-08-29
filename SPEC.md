@@ -13,11 +13,11 @@ the lower document is the defect, fixed in the same change. The order is declare
 
 ## 1. Deployment profiles
 
-Selected by `HRZ_REGISTRY_PROFILE` (or `profile:` in `config/settings.yaml`). Nothing above
+Selected by `AGENT_REGISTRY_PROFILE` (or `profile:` in `config/settings.yaml`). Nothing above
 the adapter layer changes between profiles.
 
 The selection has **three** states, not two, and neither the variable nor the settings file
-supplies a default. `config.resolve_profile` is the only reader of `HRZ_REGISTRY_PROFILE`:
+supplies a default. `config.resolve_profile` is the only reader of `AGENT_REGISTRY_PROFILE`:
 
 1. **set to a known profile**, or named in `profile:`: that profile, matched exactly and
    case-sensitively. An unknown or mis-capitalised value refuses to load rather than
@@ -26,7 +26,7 @@ supplies a default. `config.resolve_profile` is the only reader of `HRZ_REGISTRY
    the alternative is importing cloud SDKs that are not installed, but every posture
    *relaxation* reads `exposure_profile`, which is a sentinel outside the profile set. A run
    that never named a profile therefore does not inherit the loopback-dev opening `local` is
-   granted in §7, and an unset `HRZ_REGISTRY_S2S_TOKEN` is a refusal rather than consent.
+   granted in §7, and an unset `AGENT_REGISTRY_S2S_TOKEN` is a refusal rather than consent.
 3. Restrictions read `bind_profile` and fail closed in the **opposite** direction: an
    unconsented run looks like `local` to the bind guard and stays on loopback.
 
@@ -35,7 +35,7 @@ with its own permissive default, or if the settings file reintroduces one.
 
 | Profile | Catalog backend | Google Cloud SDKs | Emulator | Use |
 |---|---|---|---|---|
-| `gcp` | AlloyDB for PostgreSQL (JSONB upsert) or Firestore (one doc per agent), lazy SDK imports | required (`[gcp]` extra) | n/a | Production (set `HRZ_REGISTRY_PROFILE=gcp` explicitly). |
+| `gcp` | AlloyDB for PostgreSQL (JSONB upsert) or Firestore (one doc per agent), lazy SDK imports | required (`[gcp]` extra) | n/a | Production (set `AGENT_REGISTRY_PROFILE=gcp` explicitly). |
 | `local` | single-file SQLite catalog, idempotent upsert, seedable | none | optional Firestore emulator (opt-in) | What dev / test / CI name explicitly (Makefile, `ci.yaml`). Runs offline, no API key. |
 | `onprem` | fail-fast placeholders (`NotImplementedError`) | none | n/a | Google Distributed Cloud migration target. CLI exits `2`. |
 
@@ -113,19 +113,19 @@ The catalog CRUD and per-agent resolution routes (marked **S2S** above) authenti
 `require_service_caller`):
 
 - exactly `local`, deliberately chosen: a static shared secret compared in constant time
-  against `HRZ_REGISTRY_S2S_TOKEN`. The variable is read in three states. UNSET: the API
+  against `AGENT_REGISTRY_S2S_TOKEN`. The variable is read in three states. UNSET: the API
   stays open (loopback dev, so the offline gate runs with no secret). SET to a secret: a
   request without the matching token is `401`. SET to an EMPTY value: every guarded route is
   a `503`, because an operator who set the variable expressed an intent to authenticate and
   an empty secret authenticates nobody, so it must never inherit the unset opening.
 - `gcp` / `secure`: the bearer is a Google-signed OIDC ID token; its signature, issuer, expiry
-  and audience (`HRZ_REGISTRY_S2S_AUDIENCE`) are verified, then the caller service account is
-  authorized against the `HRZ_REGISTRY_S2S_ALLOWED_CALLERS` allowlist (`403` if not allowed).
+  and audience (`AGENT_REGISTRY_S2S_AUDIENCE`) are verified, then the caller service account is
+  authorized against the `AGENT_REGISTRY_S2S_ALLOWED_CALLERS` allowlist (`403` if not allowed).
   An unset or blank audience, and an unset or blank allowlist, are each a `503`, decided
   before the bearer is inspected, so an unconfigured identity policy cannot pass for a
   satisfied one. The Google verification libraries are imported lazily, so the offline
   profile needs no GCP SDK.
 - any other profile string, including the unconfigured case where nothing ever named one: the
-  shared-secret path with no opening, so an unset `HRZ_REGISTRY_S2S_TOKEN` is a `503`. The
+  shared-secret path with no opening, so an unset `AGENT_REGISTRY_S2S_TOKEN` is a `503`. The
   opening in the first case belongs to a profile somebody chose; it is not granted to a
   deployment whose configuration never arrived (§1).

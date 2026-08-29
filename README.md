@@ -29,7 +29,7 @@ Key guides: [demo](DEMO.md), [adoption](docs/ADOPTING.md),
 
 ## Deployment profiles
 
-Select the adapter stack with `HRZ_REGISTRY_PROFILE` (or `profile:` in
+Select the adapter stack with `AGENT_REGISTRY_PROFILE` (or `profile:` in
 `config/settings.yaml`). Neither supplies a default: naming no profile binds the `local`
 adapters but withholds the openings `local` is granted, so a lost config map refuses rather
 than serving unauthenticated (SPEC §1). Nothing above the adapter layer changes
@@ -37,7 +37,7 @@ between profiles.
 
 | Profile | Catalog backend | Google Cloud SDKs | Use |
 |---|---|---|---|
-| `gcp` | AlloyDB for PostgreSQL (JSONB upsert) or Firestore (one doc per agent), lazy SDK imports | required (`[gcp]` extra) | Production (set `HRZ_REGISTRY_PROFILE=gcp` explicitly). |
+| `gcp` | AlloyDB for PostgreSQL (JSONB upsert) or Firestore (one doc per agent), lazy SDK imports | required (`[gcp]` extra) | Production (set `AGENT_REGISTRY_PROFILE=gcp` explicitly). |
 | `local` | single-file **SQLite** catalog, idempotent upsert, seedable | **none** | What dev / test / CI name explicitly. Runs offline, no API key, no emulator. |
 | `onprem` | fail-fast placeholders (`NotImplementedError`) | none | Documented Google Distributed Cloud migration target; the CLI exits `2`. |
 
@@ -83,11 +83,11 @@ marks the routes that require service-to-service auth (see below).
 authenticate the calling service and fail closed; `/healthz` and the public A2A discovery card
 stay open. Callers send `Authorization: Bearer <token>` (`src/agent_registry/api/security.py`):
 under a deliberately chosen `local` a constant-time shared-secret compare against
-`HRZ_REGISTRY_S2S_TOKEN` (unset => open for loopback dev so the offline gate runs with no
+`AGENT_REGISTRY_S2S_TOKEN` (unset => open for loopback dev so the offline gate runs with no
 secret; set to a secret => `401` without it; set to an empty value => `503`, never the unset
 opening); under `gcp` a Google-signed OIDC ID token verified against
-`HRZ_REGISTRY_S2S_AUDIENCE`, with the caller service account checked against
-`HRZ_REGISTRY_S2S_ALLOWED_CALLERS` (`403` if not allowed). If no profile was ever named, the
+`AGENT_REGISTRY_S2S_AUDIENCE`, with the caller service account checked against
+`AGENT_REGISTRY_S2S_ALLOWED_CALLERS` (`403` if not allowed). If no profile was ever named, the
 guarded routes refuse with a `503` rather than inheriting the `local` opening.
 
 ### The `AgentCard` JSON
@@ -128,7 +128,7 @@ deploy and the row updates in place. It cannot replace the reserved registry sel
 cannot publish an active card directly.
 
 The release request contains identifiers only. In `gcp`, Hrz3 calls the trusted
-`HRZ_RELEASE_VERIFIER_URL` with `HRZ_RELEASE_VERIFIER_TOKEN`; the verifier returns the
+`RELEASE_VERIFIER_URL` with `RELEASE_VERIFIER_TOKEN`; the verifier returns the
 passing/attested Hrz4 evidence, durable reference, Hrz5 audit linkage, approver and release
 time. Caller-supplied status, attestation, evidence URI or approver fields are never accepted.
 The laptop profile recognizes only exact fictional demo identifiers derived from agent name
@@ -205,7 +205,7 @@ above the adapter layer is touched.
 
 The `local` profile is what development names: a SQLite catalog that runs the whole registry
 with no Google Cloud SDKs, no API key, and no emulator. Name it explicitly (the Makefile and
-`ci.yaml` do); leaving `HRZ_REGISTRY_PROFILE` unset binds the same adapters but refuses the
+`ci.yaml` do); leaving `AGENT_REGISTRY_PROFILE` unset binds the same adapters but refuses the
 guarded routes.
 
 ```bash
@@ -220,8 +220,8 @@ The `agent-registry` CLI publishes and resolves cards against the active profile
 `local` it returns a real artifact; under `onprem` it exits `2` with the migration message.
 
 ```bash
-export HRZ_REGISTRY_PROFILE=local
-export HRZ_REGISTRY_LOCAL_DB=/tmp/hrz-registry.db   # the SQLite catalog file (the "seed" store)
+export AGENT_REGISTRY_PROFILE=local
+export AGENT_REGISTRY_LOCAL_DB=/tmp/hrz-registry.db   # the SQLite catalog file (the "seed" store)
 
 # Publish (upsert) an AgentCard, then read it back from the catalog.
 agent-registry register --card '{
@@ -236,7 +236,7 @@ agent-registry list                       # -> the JSON array of stored cards
 agent-registry get compliance-advisory   # -> the single card
 
 # The same command under onprem fails fast (exit 2) with the migration message:
-HRZ_REGISTRY_PROFILE=onprem agent-registry list; echo "exit=$?"   # -> exit=2
+AGENT_REGISTRY_PROFILE=onprem agent-registry list; echo "exit=$?"   # -> exit=2
 ```
 
 `make smoke` runs the register-then-list flow in one step.
@@ -270,7 +270,7 @@ curl localhost:8083/v1/agents/compliance-advisory/card | jq
 ```bash
 # Start the official Firestore emulator (needs the [gcp] extra installed), then:
 export FIRESTORE_EMULATOR_HOST=localhost:8080
-export HRZ_REGISTRY_PROFILE=local
+export AGENT_REGISTRY_PROFILE=local
 agent-registry register --card '{...}'    # writes mirror to the emulator
 ```
 
@@ -278,7 +278,7 @@ Without `FIRESTORE_EMULATOR_HOST` (or without the `[gcp]` extra) the local profi
 SDK-free SQLite path. No google-cloud package is imported on the default path.
 ```
 
-Port **8083** matches Rsk1's `RemoteRegistryAdapter` default (`HRZ_REGISTRY_URL`,
+Port **8083** matches Rsk1's `RemoteRegistryAdapter` default (`AGENT_REGISTRY_URL`,
 `http://localhost:8083`), so Rsk1 in `profile: platform` resolves agents from this service out
 of the box.
 
@@ -291,7 +291,7 @@ of the box.
 #   get      -> GET  /v1/agents/{name}   (404 -> None)
 #   list     -> GET  /v1/agents
 import os
-os.environ["HRZ_REGISTRY_URL"] = "http://localhost:8083"
+os.environ["AGENT_REGISTRY_URL"] = "http://localhost:8083"
 ```
 
 ---
@@ -342,14 +342,14 @@ red-team categories, with no unresolved review. The Hrz5 reviewer-only approval 
 |---|---|---|
 | `project_id` | `GOOGLE_CLOUD_PROJECT` | `your-gcp-project` |
 | `region` | `GCP_REGION` | `asia-southeast1` |
-| `profile` | `HRZ_REGISTRY_PROFILE` | _empty_ (no default anywhere; dev/CI set `local`, production sets `gcp`, both explicitly) |
-| `local.db_path` | `HRZ_REGISTRY_LOCAL_DB` | _empty_ (=> `~/.agent_registry/local.db`) |
-| `backend` | `HRZ_REGISTRY_BACKEND` | `alloydb` (`alloydb` \| `firestore`) |
-| `kms_key` | `HRZ_REGISTRY_KMS_KEY` | _empty_ (regional CMEK key under gcp) |
-| `registry.public_url` | `HRZ_REGISTRY_PUBLIC_URL` | `https://agent-registry.asia-southeast1.run.app` |
-| `registry.quality_url` | `HRZ_QUALITY_URL` | _empty_ (required by `gcp` release) |
-| `registry.observability_url` | `HRZ_OBSERVABILITY_URL` | _empty_ (required by `gcp` release) |
-| `alloydb.instance_uri` | `HRZ_REGISTRY_ALLOYDB_URI` | _empty_ |
+| `profile` | `AGENT_REGISTRY_PROFILE` | _empty_ (no default anywhere; dev/CI set `local`, production sets `gcp`, both explicitly) |
+| `local.db_path` | `AGENT_REGISTRY_LOCAL_DB` | _empty_ (=> `~/.agent_registry/local.db`) |
+| `backend` | `AGENT_REGISTRY_BACKEND` | `alloydb` (`alloydb` \| `firestore`) |
+| `kms_key` | `AGENT_REGISTRY_KMS_KEY` | _empty_ (regional CMEK key under gcp) |
+| `registry.public_url` | `AGENT_REGISTRY_PUBLIC_URL` | `https://agent-registry.asia-southeast1.run.app` |
+| `registry.quality_url` | `QUALITY_GATE_URL` | _empty_ (required by `gcp` release) |
+| `registry.observability_url` | `OBSERVABILITY_URL` | _empty_ (required by `gcp` release) |
+| `alloydb.instance_uri` | `AGENT_REGISTRY_ALLOYDB_URI` | _empty_ |
 
 To use Firestore instead of AlloyDB, set `backend: firestore` and point the `gcp` binding at
 `agent_registry.adapters.gcp.firestore_registry:FirestoreRegistryAdapter`.
@@ -361,7 +361,7 @@ To use Firestore instead of AlloyDB, set `backend: firestore` and point the `gcp
 ```bash
 make docker-build
 docker run --rm -p 8083:8083 \
-  -e HRZ_REGISTRY_PROFILE=local \
+  -e AGENT_REGISTRY_PROFILE=local \
   agent-registry:latest
 ```
 
@@ -369,7 +369,7 @@ The image is a two-stage build (slim digest-pinned base, virtualenv only, no bui
 in the runtime stage), runs as non-root uid `10001`, declares a `HEALTHCHECK` against
 `/healthz`, and listens on `8083`. It selects the SECURE `gcp` profile explicitly, so a
 deployment that forgets an environment variable does not silently fall back to the no-auth
-SQLite laptop profile. Pass `-e HRZ_REGISTRY_PROFILE=local` (as above) when you want the
+SQLite laptop profile. Pass `-e AGENT_REGISTRY_PROFILE=local` (as above) when you want the
 offline store in a container; on Cloud Run, deploy with the service account and CMEK wired by
 Terraform.
 

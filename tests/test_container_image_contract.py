@@ -48,8 +48,8 @@ def test_image_declares_a_healthcheck_against_healthz() -> None:
 
 def test_image_selects_the_secure_profile_explicitly() -> None:
     runtime = _runtime_stage()
-    assert "HRZ_REGISTRY_PROFILE=gcp" in runtime
-    assert "HRZ_REGISTRY_PROFILE=local" not in runtime
+    assert "AGENT_REGISTRY_PROFILE=gcp" in runtime
+    assert "AGENT_REGISTRY_PROFILE=local" not in runtime
 
 
 def test_base_image_stays_digest_pinned() -> None:

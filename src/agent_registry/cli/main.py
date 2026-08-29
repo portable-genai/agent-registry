@@ -2,7 +2,7 @@
 
 A thin, dependency-light (stdlib ``argparse``) presentation layer over the catalog. It owns
 no business logic: every command builds the wiring from
-:class:`~agent_registry.container.Container` for the active ``HRZ_REGISTRY_PROFILE``, calls
+:class:`~agent_registry.container.Container` for the active ``AGENT_REGISTRY_PROFILE``, calls
 the resolved :class:`~agent_registry.ports.registry.AgentRegistryPort`, and prints the
 result.
 
@@ -12,7 +12,7 @@ Design constraints honoured here:
   ``--help``) must never pull in FastAPI, uvicorn or the Google Cloud SDKs. The container and
   adapters are imported lazily inside command bodies, so the onprem / test profile (which
   installs no Google Cloud SDK) can still load the CLI and run ``--help``.
-* **Profile-aware.** ``HRZ_REGISTRY_PROFILE`` selects the adapter stack. The ``onprem``
+* **Profile-aware.** ``AGENT_REGISTRY_PROFILE`` selects the adapter stack. The ``onprem``
   profile binds placeholder adapters that raise ``NotImplementedError`` from every method;
   when a command trips one of those, the CLI fails clearly (exit code 2) with a message that
   names the migration target rather than dumping a traceback.
@@ -21,7 +21,7 @@ Exit codes: ``0`` success; ``2`` the active profile cannot satisfy the command (
 onprem stub, or no adapter wired); ``1`` an unexpected runtime failure.
 
 Primary command for the end-to-end local smoke is ``register`` followed by ``list`` /
-``get`` (see README "Run it locally"). Under ``HRZ_REGISTRY_PROFILE=onprem`` any command
+``get`` (see README "Run it locally"). Under ``AGENT_REGISTRY_PROFILE=onprem`` any command
 that touches the store exits 2 with the migration message.
 """
 
@@ -162,7 +162,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="agent-registry",
         description=(
             "A3 Agent Registry & Governance CLI: publish and resolve A2A AgentCards in the "
-            "governed catalog. The active adapter stack is chosen by HRZ_REGISTRY_PROFILE "
+            "governed catalog. The active adapter stack is chosen by AGENT_REGISTRY_PROFILE "
             "(gcp | local | onprem); 'local' runs the SQLite catalog offline with no Google "
             "Cloud SDKs."
         ),

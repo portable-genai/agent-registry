@@ -3,12 +3,12 @@
 The whole point of the ports-and-adapters shape is that Hrz3's exit story is **demonstrable,
 not aspirational**. Moving the governed catalog off the managed GCP stack onto a sovereign /
 on-premise platform (the Google Distributed Cloud target) is a one-line profile change
-(`HRZ_REGISTRY_PROFILE=onprem`) plus filling in the adapter body. The domain, the HTTP API,
+(`AGENT_REGISTRY_PROFILE=onprem`) plus filling in the adapter body. The domain, the HTTP API,
 the CLI, the card mapping and the container wiring do not change.
 
 ## What "onprem" gives you today
 
-Setting `HRZ_REGISTRY_PROFILE=onprem` rebinds the catalog port to a placeholder adapter under
+Setting `AGENT_REGISTRY_PROFILE=onprem` rebinds the catalog port to a placeholder adapter under
 `src/agent_registry/adapters/onprem/`. That adapter:
 
 - constructs cleanly with **no Google Cloud SDK installed** and **no external dependencies**

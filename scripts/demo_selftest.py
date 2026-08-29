@@ -96,7 +96,7 @@ def main() -> int:
         env = os.environ.copy()
         env.update(
             DEMO_AUTO="1",
-            HRZ_REGISTRY_PROFILE="local",
+            AGENT_REGISTRY_PROFILE="local",
             PYTHONPATH=str(ROOT / "src"),
         )
         subprocess.run(

@@ -104,7 +104,7 @@ app = FastAPI(
 
 #: The operator's explicit opt-in to exposure. The SAME variable the bind guard in
 #: ``__main__.main()`` honours, so there is one way to accept the exposure and not two.
-_INSECURE_DEMO_ENV = "HRZ_REGISTRY_ALLOW_INSECURE_DEMO"
+_INSECURE_DEMO_ENV = "AGENT_REGISTRY_ALLOW_INSECURE_DEMO"
 
 
 def _is_unauthenticated_posture(settings: Settings) -> bool:
@@ -131,7 +131,7 @@ def _is_unauthenticated_posture(settings: Settings) -> bool:
     That deployment is fronted by the platform and every data route refuses an unverified caller
     on its own, so the guard stands down for it and the shipped Cloud Run service keeps serving.
 
-    Note what is NOT in this expression: ``HRZ_REGISTRY_S2S_TOKEN``. Whether a credential happens
+    Note what is NOT in this expression: ``AGENT_REGISTRY_S2S_TOKEN``. Whether a credential happens
     to be SET is not evidence that this deployment can authenticate its callers, and it is no
     evidence at all about the routes that carry no credential by design. The credential belongs
     where it already is: in the S2S dependency guarding the catalog, one route at a time.
@@ -191,10 +191,10 @@ def _capability_manifest(settings: Settings) -> CapabilityManifestModel:
     demo_only = settings.profile == "local"
     managed = settings.profile == "gcp"
     refs = {
-        "agent-catalog": read_env_setting("HRZ_REGISTRY_CATALOG_ATTESTATION_REF").value,
-        "identity-entitlements": read_env_setting("HRZ_REGISTRY_IDENTITY_ATTESTATION_REF").value,
-        "release-governance": read_env_setting("HRZ_REGISTRY_RELEASE_ATTESTATION_REF").value,
-        "audit-linkage": read_env_setting("HRZ_REGISTRY_AUDIT_ATTESTATION_REF").value,
+        "agent-catalog": read_env_setting("AGENT_REGISTRY_CATALOG_ATTESTATION_REF").value,
+        "identity-entitlements": read_env_setting("AGENT_REGISTRY_IDENTITY_ATTESTATION_REF").value,
+        "release-governance": read_env_setting("AGENT_REGISTRY_RELEASE_ATTESTATION_REF").value,
+        "audit-linkage": read_env_setting("AGENT_REGISTRY_AUDIT_ATTESTATION_REF").value,
     }
     local_or_managed = demo_only or managed
 
@@ -428,7 +428,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     """Return a FastAPI app bound to the adapter family for the given (or active) profile.
 
     With no ``settings`` this returns the module-level ``app`` (the active
-    ``HRZ_REGISTRY_PROFILE``, resolved lazily through :mod:`agent_registry.api.deps`). Passing
+    ``AGENT_REGISTRY_PROFILE``, resolved lazily through :mod:`agent_registry.api.deps`). Passing
     ``settings`` builds a fresh app with dependency overrides so tests bind an ephemeral
     in-memory catalog without touching the process-wide container. The bound adapter is still
     resolved lazily: the Container's ``registry`` cached-property is only realised on first

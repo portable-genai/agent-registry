@@ -71,7 +71,7 @@ terraform apply \
   environment via `${ENV:-default}` interpolation.
 - Residency is enforced three times from one allowlist: `terraform plan` validation, the
   `gcp.resourceLocations` Org Policy, and a fail-closed check when the application loads its
-  settings (`HRZ_REGISTRY_ALLOWED_REGIONS`, see `src/agent_registry/config.py`).
+  settings (`AGENT_REGISTRY_ALLOWED_REGIONS`, see `src/agent_registry/config.py`).
 - The VPC-SC perimeter starts in dry run. Watch the `Hrz3 registry: VPC-SC dry-run violation`
   alert until it is silent, then set `vpc_sc_enforce = true`. The same service list is used in
   both modes, so enforcement cannot exceed what dry run rehearsed.
