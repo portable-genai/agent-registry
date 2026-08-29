@@ -81,11 +81,11 @@ TWO_STATE_READS_WITH_A_REASON: dict[str, str] = {
         "Uvicorn log verbosity grants no route or credential; an empty or invalid value is a "
         "visible uvicorn startup error rather than a fallback to a weaker control."
     ),
-    "HRZ_REGISTRY_LOCAL_DB": (
+    "AGENT_REGISTRY_LOCAL_DB": (
         "The offline walkthrough snapshots and restores this process-local variable around a "
         "temporary SQLite demo. The read selects no production store or access posture."
     ),
-    "HRZ_REGISTRY_PROFILE": (
+    "AGENT_REGISTRY_PROFILE": (
         "The offline walkthrough snapshots and restores its own locally pinned profile. Runtime "
         "profile selection itself is exclusively resolved three-state in config.resolve_profile."
     ),

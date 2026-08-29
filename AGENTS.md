@@ -35,7 +35,7 @@ forward-looking marker reappears in the four authority documents.
 
 - Hexagonal: pure domain (`models.py`, `cards.py`, `self_card.py`) imports stdlib only; every
   adapter constructor takes exactly one `Settings`; cloud imports are lazy.
-- Three profiles selected by `HRZ_REGISTRY_PROFILE` (`gcp` / `local` / `onprem`); the offline
+- Three profiles selected by `AGENT_REGISTRY_PROFILE` (`gcp` / `local` / `onprem`); the offline
   `local` profile is the default and the whole gate runs on it with no cloud SDKs.
 - Fail closed: unknown profile raises, S2S auth guards every catalog route, a region outside
   `allowed_regions` refuses to load.

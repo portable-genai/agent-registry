@@ -81,7 +81,7 @@ def test_every_port_has_exact_profile_bindings() -> None:
 def test_gcp_region_is_configurable_from_one_selector(monkeypatch) -> None:
     # Region and residency allowlist move together: a new region is approved, not assumed.
     monkeypatch.setenv("GCP_REGION", "europe-west4")
-    monkeypatch.setenv("HRZ_REGISTRY_ALLOWED_REGIONS", "asia-southeast1,europe-west4")
+    monkeypatch.setenv("AGENT_REGISTRY_ALLOWED_REGIONS", "asia-southeast1,europe-west4")
     settings = Settings.load(CONFIG_PATH)
     assert settings.region == "europe-west4"
     assert settings.registry.public_url == "https://agent-registry.europe-west4.run.app"

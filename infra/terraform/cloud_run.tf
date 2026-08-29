@@ -46,19 +46,19 @@ resource "google_cloud_run_v2_service" "registry" {
       }
 
       env {
-        name  = "HRZ_REGISTRY_PROFILE"
+        name  = "AGENT_REGISTRY_PROFILE"
         value = "gcp"
       }
       env {
-        name  = "HRZ_REGISTRY_S2S_AUDIENCE"
+        name  = "AGENT_REGISTRY_S2S_AUDIENCE"
         value = var.service_audience
       }
       env {
-        name  = "HRZ_REGISTRY_S2S_ALLOWED_CALLERS"
+        name  = "AGENT_REGISTRY_S2S_ALLOWED_CALLERS"
         value = join(",", var.caller_service_accounts)
       }
       env {
-        name  = "HRZ_REGISTRY_BACKEND"
+        name  = "AGENT_REGISTRY_BACKEND"
         value = var.backend
       }
       env {
@@ -70,55 +70,55 @@ resource "google_cloud_run_v2_service" "registry" {
         value = var.region
       }
       env {
-        name  = "HRZ_REGISTRY_ALLOWED_REGIONS"
+        name  = "AGENT_REGISTRY_ALLOWED_REGIONS"
         value = join(",", var.allowed_regions)
       }
       env {
-        name  = "HRZ_REGISTRY_KMS_KEY"
+        name  = "AGENT_REGISTRY_KMS_KEY"
         value = google_kms_crypto_key.registry.id
       }
       env {
-        name  = "HRZ_REGISTRY_PUBLIC_URL"
+        name  = "AGENT_REGISTRY_PUBLIC_URL"
         value = var.public_service_url
       }
       env {
-        name  = "HRZ_QUALITY_URL"
+        name  = "QUALITY_GATE_URL"
         value = var.quality_service_url
       }
       env {
-        name  = "HRZ_OBSERVABILITY_URL"
+        name  = "OBSERVABILITY_URL"
         value = var.observability_service_url
       }
       env {
-        name  = "HRZ_RELEASE_POLICY_VERSION"
+        name  = "RELEASE_POLICY_VERSION"
         value = var.release_policy_version
       }
       env {
-        name  = "HRZ_RELEASE_DATASET_ID"
+        name  = "RELEASE_DATASET_ID"
         value = var.release_dataset_id
       }
       env {
-        name  = "HRZ_RELEASE_DATASET_VERSION"
+        name  = "RELEASE_DATASET_VERSION"
         value = var.release_dataset_version
       }
       env {
-        name  = "HRZ_RELEASE_DATASET_DIGEST"
+        name  = "RELEASE_DATASET_DIGEST"
         value = var.release_dataset_digest
       }
       env {
-        name  = "HRZ_RELEASE_EVALUATOR"
+        name  = "RELEASE_EVALUATOR"
         value = var.release_evaluator
       }
       env {
-        name  = "HRZ_RELEASE_THRESHOLD_POLICY_DIGEST"
+        name  = "RELEASE_THRESHOLD_POLICY_DIGEST"
         value = var.release_threshold_policy_digest
       }
       env {
-        name  = "HRZ_RELEASE_ARTIFACT_PREFIXES"
+        name  = "RELEASE_ARTIFACT_PREFIXES"
         value = join(",", var.release_artifact_prefixes)
       }
       env {
-        name  = "HRZ_RELEASE_REDTEAM_CATEGORIES"
+        name  = "RELEASE_REDTEAM_CATEGORIES"
         value = join(",", var.release_redteam_categories)
       }
 
@@ -126,7 +126,7 @@ resource "google_cloud_run_v2_service" "registry" {
       dynamic "env" {
         for_each = local.use_alloydb ? [1] : []
         content {
-          name  = "HRZ_REGISTRY_ALLOYDB_URI"
+          name  = "AGENT_REGISTRY_ALLOYDB_URI"
           value = google_alloydb_instance.primary[0].name
         }
       }
@@ -135,7 +135,7 @@ resource "google_cloud_run_v2_service" "registry" {
       dynamic "env" {
         for_each = local.use_firestore ? [1] : []
         content {
-          name  = "HRZ_REGISTRY_FIRESTORE_DB"
+          name  = "AGENT_REGISTRY_FIRESTORE_DB"
           value = google_firestore_database.registry[0].name
         }
       }

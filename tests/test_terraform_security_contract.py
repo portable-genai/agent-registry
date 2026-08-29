@@ -10,8 +10,8 @@ def test_managed_registry_wires_fail_closed_inbound_identity() -> None:
     variables = (_TF / "variables.tf").read_text(encoding="utf-8")
     iam = (_TF / "iam.tf").read_text(encoding="utf-8")
 
-    assert "HRZ_REGISTRY_S2S_AUDIENCE" in cloud_run
-    assert "HRZ_REGISTRY_S2S_ALLOWED_CALLERS" in cloud_run
+    assert "AGENT_REGISTRY_S2S_AUDIENCE" in cloud_run
+    assert "AGENT_REGISTRY_S2S_ALLOWED_CALLERS" in cloud_run
     assert "length(var.caller_service_accounts) > 0" in variables
     assert 'role     = "roles/run.invoker"' in iam
     assert "var.caller_service_accounts" in iam
@@ -85,5 +85,5 @@ def test_cmek_is_bound_per_service_not_project_wide() -> None:
 def test_region_and_allowlist_reach_the_runtime_as_configuration() -> None:
     cloud_run = (_TF / "cloud_run.tf").read_text(encoding="utf-8")
 
-    assert "HRZ_REGISTRY_ALLOWED_REGIONS" in cloud_run
+    assert "AGENT_REGISTRY_ALLOWED_REGIONS" in cloud_run
     assert 'join(",", var.allowed_regions)' in cloud_run

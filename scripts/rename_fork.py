@@ -11,7 +11,7 @@ from pathlib import Path
 _ROOT = Path(__file__).resolve().parent.parent
 _OLD_PACKAGE = "agent_registry"
 _OLD_CLI = "agent-registry"
-_OLD_ENV_PREFIX = "HRZ_REGISTRY_"
+_OLD_ENV_PREFIX = "AGENT_REGISTRY_"
 _OLD_RESOURCE = "agent-registry"
 _OLD_DIST = "agent-registry"
 _SKIP_DIRS = {

@@ -60,7 +60,7 @@ stack; the `onprem` column is the fail-fast migration target.
 | Upsert | `INSERT ... ON CONFLICT(name) DO UPDATE`, idempotent on `name` |
 | Determinism | `db_path=":memory:"` in tests; `seed(cards)` / `add(cards)` for deterministic loads |
 | Thread-safety | `check_same_thread=False` connection guarded by an `RLock` (safe under the FastAPI thread pool) |
-| Default path | `~/.agent_registry/local.db` (resolved at call time, override via `HRZ_REGISTRY_LOCAL_DB`) |
+| Default path | `~/.agent_registry/local.db` (resolved at call time, override via `AGENT_REGISTRY_LOCAL_DB`) |
 | Emulator opt-in | when `FIRESTORE_EMULATOR_HOST` is set AND `google-cloud-firestore` imports, writes mirror to the Firestore emulator (lazy import, only on that branch) |
 
 There is no emulator for AlloyDB, so the SQLite path is the unconditional default for the
@@ -79,7 +79,7 @@ sequenceDiagram
   participant S as Catalog store
 
   Op->>CLI: register, card JSON
-  CLI->>C: resolve AgentRegistryPort for HRZ_REGISTRY_PROFILE
+  CLI->>C: resolve AgentRegistryPort for AGENT_REGISTRY_PROFILE
   C->>A: construct with Settings
   CLI->>A: register(card)
   alt profile local or gcp
@@ -98,6 +98,6 @@ sequenceDiagram
 ## 4. Profile switch is the only change
 
 Moving from the offline catalog to managed persistence is a one-line change of
-`HRZ_REGISTRY_PROFILE` (and, for `gcp`, `backend: alloydb | firestore`). The FastAPI app, the
+`AGENT_REGISTRY_PROFILE` (and, for `gcp`, `backend: alloydb | firestore`). The FastAPI app, the
 CLI, `cards.py`, `models.py` and `container.py` are identical across profiles, which is the
 no-lock-in proof (see [`COMPLIANCE.md`](COMPLIANCE.md), P-02 and P-12).

@@ -3,10 +3,10 @@
 Mirrors Hrz7 (``human-review-console/tests/test_profile_single_source.py``) as the
 standing gate for the absence-read-as-consent class.
 
-The defect this guards: reading ``HRZ_REGISTRY_PROFILE`` as a two-state value with ``local``
+The defect this guards: reading ``AGENT_REGISTRY_PROFILE`` as a two-state value with ``local``
 as the default, whether in ``config/settings.yaml`` interpolation, in ``Settings.from_dict``,
 or in ``__main__.py``. ``local`` is exactly the profile the S2S rule grants an opening to when
-``HRZ_REGISTRY_S2S_TOKEN`` is unset, so a deployment whose configuration never arrived would
+``AGENT_REGISTRY_S2S_TOKEN`` is unset, so a deployment whose configuration never arrived would
 accept catalog writes from any caller with no credential at all. A drift guard is part of the
 defence, because any module that re-derives the profile with its own permissive default can
 reintroduce the whole class in one line.
@@ -50,17 +50,17 @@ def test_only_the_resolver_reads_the_profile_variable_from_the_environment() -> 
                 offenders.append(f"{path.relative_to(_SRC)}:{number}: {line.strip()}")
     assert not offenders, (
         "these modules re-derive the profile instead of calling config.resolve_profile, "
-        "so an unset HRZ_REGISTRY_PROFILE can again be read as consent:\n" + "\n".join(offenders)
+        "so an unset AGENT_REGISTRY_PROFILE can again be read as consent:\n" + "\n".join(offenders)
     )
 
 
 def test_the_settings_file_declares_no_permissive_profile_default() -> None:
-    """``${HRZ_REGISTRY_PROFILE:-local}`` in the YAML is the same fail-open, one layer down."""
+    """``${AGENT_REGISTRY_PROFILE:-local}`` in the YAML is the same fail-open, one layer down."""
     match = re.search(
         r"^profile:\s*(\S+)", _SETTINGS_YAML.read_text(encoding="utf-8"), flags=re.MULTILINE
     )
     assert match is not None, "config/settings.yaml must still declare a profile key"
-    assert match.group(1) == "${HRZ_REGISTRY_PROFILE:-}", (
+    assert match.group(1) == "${AGENT_REGISTRY_PROFILE:-}", (
         "the settings file supplies a default for the profile, so an unset variable is "
         f"indistinguishable from a chosen one: {match.group(1)}"
     )
@@ -74,14 +74,14 @@ def test_the_resolver_treats_an_absent_variable_as_no_choice() -> None:
 
 @pytest.mark.parametrize("blank", ["", "   "])
 def test_the_resolver_refuses_a_configured_empty_profile(blank: str) -> None:
-    with pytest.raises(ProfileError, match="HRZ_REGISTRY_PROFILE"):
-        resolve_profile(environ={"HRZ_REGISTRY_PROFILE": blank})
+    with pytest.raises(ProfileError, match="AGENT_REGISTRY_PROFILE"):
+        resolve_profile(environ={"AGENT_REGISTRY_PROFILE": blank})
 
 
 def test_interpolation_defaults_only_when_the_variable_is_unset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    name = "HRZ_REGISTRY_THREE_STATE_PROBE"
+    name = "AGENT_REGISTRY_THREE_STATE_PROBE"
     monkeypatch.delenv(name, raising=False)
     assert _interpolate(f"${{{name}:-documented}}") == "documented"
     monkeypatch.setenv(name, "")
@@ -118,7 +118,7 @@ def test_an_unconsented_run_still_binds_loopback() -> None:
 
 
 def test_a_deliberate_profile_is_carried_through_unchanged() -> None:
-    choice = resolve_profile(environ={"HRZ_REGISTRY_PROFILE": "gcp"})
+    choice = resolve_profile(environ={"AGENT_REGISTRY_PROFILE": "gcp"})
     assert (choice.profile, choice.explicit) == ("gcp", True)
     assert choice.exposure_profile == "gcp"
     assert choice.bind_profile == "gcp"
@@ -134,13 +134,13 @@ def test_a_profile_named_only_in_the_settings_file_is_still_deliberate() -> None
 @pytest.mark.parametrize("value", ["bogus", "Local", "GCP", "LOCAL", "local,gcp"])
 def test_an_unknown_or_mis_capitalised_profile_refuses_to_load(value: str) -> None:
     with pytest.raises(ProfileError) as excinfo:
-        resolve_profile(environ={"HRZ_REGISTRY_PROFILE": value})
-    assert "HRZ_REGISTRY_PROFILE" in str(excinfo.value)
+        resolve_profile(environ={"AGENT_REGISTRY_PROFILE": value})
+    assert "AGENT_REGISTRY_PROFILE" in str(excinfo.value)
 
 
 def test_surrounding_whitespace_is_stripped_rather_than_treated_as_a_typo() -> None:
     """A transport artifact is not a mis-capitalisation: strip, then match exactly."""
-    assert resolve_profile(environ={"HRZ_REGISTRY_PROFILE": " gcp "}).profile == "gcp"
+    assert resolve_profile(environ={"AGENT_REGISTRY_PROFILE": " gcp "}).profile == "gcp"
 
 
 def _unconsented(settings: Settings) -> Settings:

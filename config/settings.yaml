@@ -1,8 +1,8 @@
 # A3 Agent Registry & Governance (agent-registry) — runtime configuration.
 #
-# Three deployment profiles, selected by HRZ_REGISTRY_PROFILE (or profile: below):
+# Three deployment profiles, selected by AGENT_REGISTRY_PROFILE (or profile: below):
 #   gcp    : AlloyDB (or Firestore) managed catalog (lazy SDK imports). Production sets this
-#            explicitly (HRZ_REGISTRY_PROFILE=gcp in the Dockerfile / Cloud Run env).
+#            explicitly (AGENT_REGISTRY_PROFILE=gcp in the Dockerfile / Cloud Run env).
 #   local  : a WORKING offline laptop catalog (SQLite, SDK-free, no API key, no emulator
 #            required). Dev / test / CI set it explicitly (Makefile, ci.yaml).
 #   onprem : fail-fast Google Distributed Cloud migration placeholders.
@@ -17,35 +17,35 @@ project_id: ${GOOGLE_CLOUD_PROJECT:-your-gcp-project}
 region: ${GCP_REGION:-asia-southeast1}         # selected at deploy; must match Terraform
 # Residency allowlist (comma separated). Mirrors the Terraform variable of the same name:
 # a region outside it fails at process start, exactly as terraform plan fails.
-allowed_regions: ${HRZ_REGISTRY_ALLOWED_REGIONS:-asia-southeast1}
-profile: ${HRZ_REGISTRY_PROFILE:-}         # gcp | local | onprem; unset = nobody chose
-backend: ${HRZ_REGISTRY_BACKEND:-alloydb}  # alloydb | firestore (gcp profile only)
-kms_key: ${HRZ_REGISTRY_KMS_KEY:-}         # regional Cloud KMS key for CMEK
+allowed_regions: ${AGENT_REGISTRY_ALLOWED_REGIONS:-asia-southeast1}
+profile: ${AGENT_REGISTRY_PROFILE:-}         # gcp | local | onprem; unset = nobody chose
+backend: ${AGENT_REGISTRY_BACKEND:-alloydb}  # alloydb | firestore (gcp profile only)
+kms_key: ${AGENT_REGISTRY_KMS_KEY:-}         # regional Cloud KMS key for CMEK
 
 registry:
   name: agent-registry
-  public_url: ${HRZ_REGISTRY_PUBLIC_URL:-}
+  public_url: ${AGENT_REGISTRY_PUBLIC_URL:-}
   version: 0.1.0
-  quality_url: ${HRZ_QUALITY_URL:-}
-  observability_url: ${HRZ_OBSERVABILITY_URL:-}
-  release_policy_version: ${HRZ_RELEASE_POLICY_VERSION:-}
-  release_dataset_id: ${HRZ_RELEASE_DATASET_ID:-}
-  release_dataset_version: ${HRZ_RELEASE_DATASET_VERSION:-}
-  release_dataset_digest: ${HRZ_RELEASE_DATASET_DIGEST:-}
-  release_evaluator: ${HRZ_RELEASE_EVALUATOR:-}
-  release_threshold_policy_digest: ${HRZ_RELEASE_THRESHOLD_POLICY_DIGEST:-}
-  release_artifact_prefixes: ${HRZ_RELEASE_ARTIFACT_PREFIXES:-}
-  release_redteam_categories: ${HRZ_RELEASE_REDTEAM_CATEGORIES:-}
+  quality_url: ${QUALITY_GATE_URL:-}
+  observability_url: ${OBSERVABILITY_URL:-}
+  release_policy_version: ${RELEASE_POLICY_VERSION:-}
+  release_dataset_id: ${RELEASE_DATASET_ID:-}
+  release_dataset_version: ${RELEASE_DATASET_VERSION:-}
+  release_dataset_digest: ${RELEASE_DATASET_DIGEST:-}
+  release_evaluator: ${RELEASE_EVALUATOR:-}
+  release_threshold_policy_digest: ${RELEASE_THRESHOLD_POLICY_DIGEST:-}
+  release_artifact_prefixes: ${RELEASE_ARTIFACT_PREFIXES:-}
+  release_redteam_categories: ${RELEASE_REDTEAM_CATEGORIES:-}
 
 alloydb:
-  instance_uri: ${HRZ_REGISTRY_ALLOYDB_URI:-}    # projects/.../locations/${GCP_REGION:-asia-southeast1}/clusters/.../instances/...
+  instance_uri: ${AGENT_REGISTRY_ALLOYDB_URI:-}    # projects/.../locations/${GCP_REGION:-asia-southeast1}/clusters/.../instances/...
   database: agent_registry
   user: registry_app
   ip_type: PRIVATE
   table: agent_cards
 
 firestore:
-  database: ${HRZ_REGISTRY_FIRESTORE_DB:-(default)}
+  database: ${AGENT_REGISTRY_FIRESTORE_DB:-(default)}
   collection: agent_cards
 
 # SDK-free 'local' profile catalog store. An unset environment variable yields the package
@@ -53,7 +53,7 @@ firestore:
 # pass ':memory:' for an ephemeral, deterministic store. The optional Firestore-emulator branch
 # is opted into via FIRESTORE_EMULATOR_HOST (no key here).
 local:
-  db_path: ${HRZ_REGISTRY_LOCAL_DB:-}            # SQLite catalog file
+  db_path: ${AGENT_REGISTRY_LOCAL_DB:-}            # SQLite catalog file
 
 # ----------------------------------------------------------------------------- #
 # Port -> adapter bindings. The container requires an explicit entry for the active

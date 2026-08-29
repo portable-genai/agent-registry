@@ -13,7 +13,7 @@ Cloud, no API key, no emulator):
 4. **Govern (rule R4 — kill shadow AI).** Every external card enters as draft. A dedicated
    release transition requires an attested Hrz4 EvalRun plus an Hrz5 audit-event reference;
    an unowned card cannot pass that transition.
-5. **Reversibility (P-02).** The same command under ``HRZ_REGISTRY_PROFILE=onprem`` fails
+5. **Reversibility (P-02).** The same command under ``AGENT_REGISTRY_PROFILE=onprem`` fails
    fast (exit 2) with the migration message — the contract is identical across profiles.
 
 Two surfaces, same domain: the **CLI** (``agent-registry``) and the **REST API**
@@ -156,12 +156,12 @@ def _cli(argv: list[str], *, db_path: str, echo: str | None = None) -> int:
     """Run the real ``agent-registry`` CLI in-process against ``db_path`` (local profile).
 
     The CLI builds its own Container from ``Settings.load()`` (it reads settings.yaml + the
-    environment), so we pin ``HRZ_REGISTRY_LOCAL_DB`` to a dedicated temp catalog. Returns the
+    environment), so we pin ``AGENT_REGISTRY_LOCAL_DB`` to a dedicated temp catalog. Returns the
     exit code; ``SystemExit`` from the CLI boundary is caught so the walkthrough continues.
     """
     print(f"$ {echo or 'agent-registry ' + ' '.join(_quote(a) for a in argv)}")
-    prev = os.environ.get("HRZ_REGISTRY_LOCAL_DB")
-    os.environ["HRZ_REGISTRY_LOCAL_DB"] = db_path
+    prev = os.environ.get("AGENT_REGISTRY_LOCAL_DB")
+    os.environ["AGENT_REGISTRY_LOCAL_DB"] = db_path
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
@@ -170,9 +170,9 @@ def _cli(argv: list[str], *, db_path: str, echo: str | None = None) -> int:
         return int(exc.code or 0)
     finally:
         if prev is None:
-            os.environ.pop("HRZ_REGISTRY_LOCAL_DB", None)
+            os.environ.pop("AGENT_REGISTRY_LOCAL_DB", None)
         else:
-            os.environ["HRZ_REGISTRY_LOCAL_DB"] = prev
+            os.environ["AGENT_REGISTRY_LOCAL_DB"] = prev
 
 
 def _quote(arg: str) -> str:
@@ -195,8 +195,8 @@ def _run_demo(out_path: str | None, demo_db: str) -> None:
     # (a fresh temp file, deleted at the end). Using a single shared file — for the API's
     # default container AND the CLI's own container — means both surfaces genuinely read and
     # write the same catalog, so the discovery narrative is coherent and deterministic.
-    os.environ["HRZ_REGISTRY_PROFILE"] = "local"
-    os.environ["HRZ_REGISTRY_LOCAL_DB"] = demo_db
+    os.environ["AGENT_REGISTRY_PROFILE"] = "local"
+    os.environ["AGENT_REGISTRY_LOCAL_DB"] = demo_db
 
     # The API's dependency container is process-wide and lru_cached; reset it so it binds the
     # local profile + our temp catalog (not whatever a previous import cached), then use the
@@ -362,17 +362,17 @@ def _run_demo(out_path: str | None, demo_db: str) -> None:
         # ---- Step 5: reversibility — onprem fail-fast ----------------------------- #
         _h("5. Reversibility (P-02) — the same command fails fast under onprem")
         print(
-            "Switching HRZ_REGISTRY_PROFILE=onprem rebinds the port to the Google\n"
+            "Switching AGENT_REGISTRY_PROFILE=onprem rebinds the port to the Google\n"
             "Distributed Cloud migration placeholder: every method raises, and the CLI\n"
             "turns that into a clean exit 2 (no traceback). The contract is identical."
         )
-        _pause("HRZ_REGISTRY_PROFILE=onprem agent-registry list   (expect exit 2)")
+        _pause("AGENT_REGISTRY_PROFILE=onprem agent-registry list   (expect exit 2)")
         print()
-        os.environ["HRZ_REGISTRY_PROFILE"] = "onprem"
+        os.environ["AGENT_REGISTRY_PROFILE"] = "onprem"
         code = _cli(
-            ["list"], db_path=cli_db, echo="HRZ_REGISTRY_PROFILE=onprem agent-registry list"
+            ["list"], db_path=cli_db, echo="AGENT_REGISTRY_PROFILE=onprem agent-registry list"
         )
-        os.environ["HRZ_REGISTRY_PROFILE"] = "local"
+        os.environ["AGENT_REGISTRY_PROFILE"] = "local"
         print(f"-> exit={code}  (2 = profile cannot satisfy the command, as designed)")
         transcript["steps"].append({"step": "onprem_failfast", "exit": code})
 
@@ -396,20 +396,20 @@ def _run_demo(out_path: str | None, demo_db: str) -> None:
 
 
 def main(out_path: str | None) -> None:
-    previous_profile = os.environ.get("HRZ_REGISTRY_PROFILE")
-    previous_db = os.environ.get("HRZ_REGISTRY_LOCAL_DB")
+    previous_profile = os.environ.get("AGENT_REGISTRY_PROFILE")
+    previous_db = os.environ.get("AGENT_REGISTRY_LOCAL_DB")
     try:
         with tempfile.TemporaryDirectory(prefix="hrz3-registry-demo-") as directory:
             _run_demo(out_path, str(Path(directory) / "registry.db"))
     finally:
         if previous_profile is None:
-            os.environ.pop("HRZ_REGISTRY_PROFILE", None)
+            os.environ.pop("AGENT_REGISTRY_PROFILE", None)
         else:
-            os.environ["HRZ_REGISTRY_PROFILE"] = previous_profile
+            os.environ["AGENT_REGISTRY_PROFILE"] = previous_profile
         if previous_db is None:
-            os.environ.pop("HRZ_REGISTRY_LOCAL_DB", None)
+            os.environ.pop("AGENT_REGISTRY_LOCAL_DB", None)
         else:
-            os.environ["HRZ_REGISTRY_LOCAL_DB"] = previous_db
+            os.environ["AGENT_REGISTRY_LOCAL_DB"] = previous_db
         from agent_registry.api import deps
 
         deps.get_container.cache_clear()

@@ -7,7 +7,7 @@ never reaches `main()`: the Dockerfile CMD is
     exec uvicorn agent_registry.api.app:app --host 0.0.0.0 --port ${PORT:-8083}
 
 so the bound was a property of one entry point rather than of the application. Executed against
-this repo with `HRZ_REGISTRY_PROFILE=local`, a peer at 203.0.113.7 carrying no credential read
+this repo with `AGENT_REGISTRY_PROFILE=local`, a peer at 203.0.113.7 carrying no credential read
 `/v1/agents`, `/v1/governance/agents` and the whole `/v1/capabilities` manifest.
 
 A3 is a CONTROL PLANE with no end user: its callers are SERVICES. So the question the guard has
@@ -22,7 +22,7 @@ the S2S SCHEME the profile binds, never from a credential:
   which is anonymous, and under a deliberate `local` with the string unset the routes are OPEN.
   None of that is authentication, so the guard applies.
 
-Whether `HRZ_REGISTRY_S2S_TOKEN` is SET must never enter the decision. It says nothing about
+Whether `AGENT_REGISTRY_S2S_TOKEN` is SET must never enter the decision. It says nothing about
 `/healthz` and `/v1/capabilities`, which carry no credential by design, and a guard derived from a
 credential switches OFF exactly when an operator configures one. The scanner at the bottom fails
 the build if the guard's argument reaches a credential at any depth.
@@ -79,7 +79,7 @@ def test_a_lan_peer_is_refused_by_the_app_object(settings: Settings, path: str) 
     )
     detail = response.json()["detail"]
     assert "203.0.113.7" in detail, "the refusal must name the peer it refused"
-    assert "HRZ_REGISTRY_ALLOW_INSECURE_DEMO" in detail, "the refusal must name the opt-out"
+    assert "AGENT_REGISTRY_ALLOW_INSECURE_DEMO" in detail, "the refusal must name the opt-out"
 
 
 def test_the_refusal_does_not_leak_the_capability_manifest(settings: Settings) -> None:
@@ -110,7 +110,7 @@ def test_a_legitimate_loopback_s2s_call_still_works(
     and its whole job is answering sibling services. The guard clears the peer, then the S2S
     dependency runs exactly as before.
     """
-    monkeypatch.setenv("HRZ_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
+    monkeypatch.setenv("AGENT_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
     client = TestClient(create_app(settings), client=LOOPBACK_PEER)
     authorized = client.get("/v1/agents", headers={"Authorization": f"Bearer {SIBLING_SECRET}"})
     assert authorized.status_code == 200, "the guard must not break a legitimate sibling call"
@@ -120,7 +120,7 @@ def test_the_s2s_dependency_still_refuses_a_wrong_token_on_loopback(
     settings: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The guard did not REPLACE the S2S check, and this fails if somebody drops it."""
-    monkeypatch.setenv("HRZ_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
+    monkeypatch.setenv("AGENT_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
     client = TestClient(create_app(settings), client=LOOPBACK_PEER)
     assert client.get("/v1/agents", headers={"Authorization": "Bearer wrong"}).status_code == 401
 
@@ -135,7 +135,7 @@ def test_a_valid_token_does_not_buy_a_lan_peer_anything(
     about `/healthz` and `/v1/capabilities`, which carry no credential. Holding it must not turn
     a LAN peer into a loopback one.
     """
-    monkeypatch.setenv("HRZ_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
+    monkeypatch.setenv("AGENT_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
     client = TestClient(create_app(settings), client=LAN_PEER)
     response = client.get("/v1/agents", headers={"Authorization": f"Bearer {SIBLING_SECRET}"})
     assert response.status_code == 503, (
@@ -148,9 +148,9 @@ def test_setting_the_token_does_not_switch_the_guard_off(
     settings: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The same rule stated on the posture itself rather than through a request."""
-    monkeypatch.setenv("HRZ_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
+    monkeypatch.setenv("AGENT_REGISTRY_S2S_TOKEN", SIBLING_SECRET)
     assert _is_unauthenticated_posture(settings) is True
-    monkeypatch.delenv("HRZ_REGISTRY_S2S_TOKEN", raising=False)
+    monkeypatch.delenv("AGENT_REGISTRY_S2S_TOKEN", raising=False)
     assert _is_unauthenticated_posture(settings) is True
 
 
@@ -159,9 +159,9 @@ def test_the_insecure_demo_opt_in_lifts_the_bound(
 ) -> None:
     """The operator's explicit, per-request-read consent. The SAME variable the bind guard uses."""
     client = TestClient(create_app(settings), client=LAN_PEER)
-    monkeypatch.setenv("HRZ_REGISTRY_ALLOW_INSECURE_DEMO", "1")
+    monkeypatch.setenv("AGENT_REGISTRY_ALLOW_INSECURE_DEMO", "1")
     assert client.get("/healthz").status_code == 200
-    monkeypatch.setenv("HRZ_REGISTRY_ALLOW_INSECURE_DEMO", "true")
+    monkeypatch.setenv("AGENT_REGISTRY_ALLOW_INSECURE_DEMO", "true")
     assert client.get("/healthz").status_code == 503
 
 
@@ -305,7 +305,7 @@ def test_the_exposure_guard_is_derived_from_the_s2s_scheme() -> None:
 #: The credential-derived shape the defect would take, one indirection deep. A scanner nobody
 #: proved can find anything is a green tick over an empty set.
 _MUTANT = (
-    "_TOKEN_ENV = 'HRZ_REGISTRY_S2S_TOKEN'\n"
+    "_TOKEN_ENV = 'AGENT_REGISTRY_S2S_TOKEN'\n"
     "def _is_unauthenticated_posture(settings):\n"
     "    if not settings.profile_explicit:\n"
     "        return True\n"

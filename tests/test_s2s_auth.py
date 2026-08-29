@@ -1,6 +1,6 @@
 """S2S auth tests for the A3 registry API (plan-hrz-s2s-auth, decision CD1).
 
-The ``local`` profile is fail-open when ``HRZ_REGISTRY_S2S_TOKEN`` is UNSET (so the offline
+The ``local`` profile is fail-open when ``AGENT_REGISTRY_S2S_TOKEN`` is UNSET (so the offline
 gate runs with zero secrets) and fail-closed when it is set. Unset and set-to-blank are
 different states: the zero-secret opening belongs to the unset one alone. ``/healthz``
 (liveness) and ``GET /.well-known/agent-card.json`` (public A2A discovery of the registry's
@@ -35,7 +35,7 @@ def token_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[str]:
 def test_no_token_configured_is_open_loopback_dev(
     settings: Settings, sample_card_json: dict
 ) -> None:
-    # HRZ_REGISTRY_S2S_TOKEN unset: the offline default, catalog still writable (zero-secret CI).
+    # AGENT_REGISTRY_S2S_TOKEN unset: the offline default, catalog still writable (zero-secret CI).
     resp = _client(settings).post("/v1/agents", json=sample_card_json)
     assert resp.status_code == 201
 
@@ -44,7 +44,7 @@ def test_no_token_configured_is_open_loopback_dev(
 def test_a_blank_token_never_inherits_the_zero_secret_opening(
     settings: Settings, sample_card_json: dict, monkeypatch: pytest.MonkeyPatch, blank: str
 ) -> None:
-    """A DELIBERATELY emptied HRZ_REGISTRY_S2S_TOKEN refuses, even under the local profile.
+    """A DELIBERATELY emptied AGENT_REGISTRY_S2S_TOKEN refuses, even under the local profile.
 
     Red before the three-state read: the secret was read in two states
     (``os.environ.get(name, "")`` then ``if secret:``), so a variable an operator set to an
@@ -89,7 +89,7 @@ def test_a_blank_bind_host_is_refused_rather_than_defaulted(
     monkeypatch.setenv("API_HOST", "  ")
     with pytest.raises(ConfiguredEmptyError):
         resolve_bind_host(
-            "gcp", host_env="API_HOST", insecure_demo_env="HRZ_REGISTRY_ALLOW_INSECURE_DEMO"
+            "gcp", host_env="API_HOST", insecure_demo_env="AGENT_REGISTRY_ALLOW_INSECURE_DEMO"
         )
 
 

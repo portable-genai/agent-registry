@@ -6,28 +6,28 @@ authenticated the caller. The shared S2S contract is:
 
 * Callers present ``Authorization: Bearer <token>``.
 * Exactly the ``local`` profile, deliberately chosen: a static shared secret from
-  ``HRZ_REGISTRY_S2S_TOKEN``, compared in constant time. When the env var is UNSET the API
+  ``AGENT_REGISTRY_S2S_TOKEN``, compared in constant time. When the env var is UNSET the API
   stays open (loopback dev only), so the offline test gate runs with zero secrets; when SET
   to a real secret, a request without the matching token is 401; when SET to an EMPTY value,
   every guarded route is 503. Those are three states, not two, and the opening belongs to the
   unset one alone: an operator who set the variable expressed an intent to authenticate, and
   an empty secret authenticates nobody, so it must never inherit the zero-secret posture.
 * ``gcp`` / secure profile: the bearer is a Google-signed OIDC ID token; its signature,
-  issuer, expiry and audience (``HRZ_REGISTRY_S2S_AUDIENCE``) are verified, then the caller
-  service account is authorized against the ``HRZ_REGISTRY_S2S_ALLOWED_CALLERS`` allowlist
+  issuer, expiry and audience (``AGENT_REGISTRY_S2S_AUDIENCE``) are verified, then the caller
+  service account is authorized against the ``AGENT_REGISTRY_S2S_ALLOWED_CALLERS`` allowlist
   (403 if not allowed). An unset audience or an empty allowlist is a 503, checked before the
   bearer is looked at, so an unconfigured identity policy cannot pass for a satisfied one.
   The google verification libs are imported lazily so the offline profile imports this module
   with no GCP SDK installed.
 * Anything else, INCLUDING an unconfigured deployment that never named a profile: the
-  shared-secret path with no opening, so an unset ``HRZ_REGISTRY_S2S_TOKEN`` is a 503.
+  shared-secret path with no opening, so an unset ``AGENT_REGISTRY_S2S_TOKEN`` is a 503.
 
 Every variable above is resolved in three states by the shared kit, so "set to an empty
 value" is never resolved to the unset default in either direction.
 
 That third case is why this module reads ``settings.exposure_profile`` rather than
 ``settings.profile``. The opening above belongs to a profile somebody deliberately chose;
-before this, an absent ``HRZ_REGISTRY_PROFILE`` resolved to ``local`` and therefore inherited
+before this, an absent ``AGENT_REGISTRY_PROFILE`` resolved to ``local`` and therefore inherited
 it, so a deployment that lost its configuration accepted catalog writes from any caller with
 no credential at all. See :func:`agent_registry.config.resolve_profile`.
 
@@ -50,9 +50,9 @@ from hex_service_kit.web import make_require_service_caller
 
 from . import deps
 
-_TOKEN_ENV = "HRZ_REGISTRY_S2S_TOKEN"  # noqa: S105 - env var NAME, not a secret value
-_ALLOWED_CALLERS_ENV = "HRZ_REGISTRY_S2S_ALLOWED_CALLERS"
-_AUDIENCE_ENV = "HRZ_REGISTRY_S2S_AUDIENCE"
+_TOKEN_ENV = "AGENT_REGISTRY_S2S_TOKEN"  # noqa: S105 - env var NAME, not a secret value
+_ALLOWED_CALLERS_ENV = "AGENT_REGISTRY_S2S_ALLOWED_CALLERS"
+_AUDIENCE_ENV = "AGENT_REGISTRY_S2S_AUDIENCE"
 
 #: The profiles whose bound scheme VERIFIES its caller server side: the bearer is a Google-signed
 #: OIDC ID token whose signature, issuer, expiry and audience are checked, and the caller service
@@ -99,7 +99,7 @@ def caller_is_verified(profile: str) -> bool:
     vertical's ``RemoteRegistryAdapter``, an A2A or MCP peer), so the noun is the CALLER where a
     user-facing sibling says END USER. The rule is identical.
 
-    Note what this does NOT read: ``HRZ_REGISTRY_S2S_TOKEN``. Whether a credential happens to be
+    Note what this does NOT read: ``AGENT_REGISTRY_S2S_TOKEN``. Whether a credential happens to be
     SET is not evidence that this deployment can authenticate anybody. It says nothing at all
     about ``/healthz`` and ``/v1/capabilities``, which carry no credential by design, and under
     the shared-secret path it authenticates only "somebody who holds this string". Deriving an

@@ -6,8 +6,8 @@ PY ?= python3
 PY := $(if $(wildcard .venv/bin/python),.venv/bin/python,$(PY))
 PORT ?= 8083
 IMAGE ?= agent-registry:latest
-# The default profile is 'local' everywhere (settings.yaml too); production sets HRZ_REGISTRY_PROFILE=gcp explicitly.
-export HRZ_REGISTRY_PROFILE ?= local
+# The default profile is 'local' everywhere (settings.yaml too); production sets AGENT_REGISTRY_PROFILE=gcp explicitly.
+export AGENT_REGISTRY_PROFILE ?= local
 # The no-auth local dev server binds loopback; override deliberately to expose it.
 API_HOST ?= 127.0.0.1
 
@@ -28,7 +28,7 @@ lock: ## Recompile both lockfiles from pyproject.toml and restore the tag = comm
 	$(PY) scripts/lock.py
 
 run: ## Run the service locally (local profile) on $(PORT).
-	HRZ_REGISTRY_PROFILE=local uvicorn agent_registry.api.app:app \
+	AGENT_REGISTRY_PROFILE=local uvicorn agent_registry.api.app:app \
 		--host $(API_HOST) --port $(PORT) --reload
 
 lint: ## ruff check + format check.
@@ -49,20 +49,20 @@ eval: ## Run the offline promotion eval gate (exit non-zero on fail).
 	$(PY) eval/run_eval.py
 
 smoke: ## End-to-end local smoke: register a card via the CLI, then list it.
-	HRZ_REGISTRY_PROFILE=local HRZ_REGISTRY_LOCAL_DB=$${TMPDIR:-/tmp}/hrz-smoke.db \
+	AGENT_REGISTRY_PROFILE=local AGENT_REGISTRY_LOCAL_DB=$${TMPDIR:-/tmp}/hrz-smoke.db \
 		agent-registry register --card '{"name":"compliance-advisory","description":"C1 Compliance Assistant","url":"https://compliance-advisory.asia-southeast1.example/a2a","version":"1.0.0","provider":"compliance-advisory","skills":[{"id":"answer","name":"Grounded compliance Q&A","description":"Cited answers."}]}'
-	HRZ_REGISTRY_PROFILE=local HRZ_REGISTRY_LOCAL_DB=$${TMPDIR:-/tmp}/hrz-smoke.db agent-registry list
+	AGENT_REGISTRY_PROFILE=local AGENT_REGISTRY_LOCAL_DB=$${TMPDIR:-/tmp}/hrz-smoke.db agent-registry list
 
 demo: ## Run the guided offline walkthrough (DEMO_AUTO=1 self-runs; see scripts/README.md).
-	HRZ_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/registry_demo.py
+	AGENT_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/registry_demo.py
 
 demo-selftest: ## Run the real demo unattended and assert every transcript outcome.
-	HRZ_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/demo_selftest.py
+	AGENT_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/demo_selftest.py
 
 portability: portability-demo ## Standard fleet alias for the executable portability proof.
 
 portability-demo: ## Run the bounded executable portability proof.
-	HRZ_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/portability_demo.py
+	AGENT_REGISTRY_PROFILE=local PYTHONPATH=src $(PY) scripts/portability_demo.py
 
 plugin: ## Render the Agent Plugins 1.0.0 directory from this repo's own declarations.
 	python scripts/render_plugin.py --dest dist/plugin

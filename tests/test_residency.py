@@ -34,7 +34,7 @@ def test_env_selected_region_outside_allowlist_fails_closed(monkeypatch) -> None
     # which stopped being outside the allowlist when that became the default on 2026-08-27 --
     # the assertion would then have passed for the wrong reason, or not at all.
     monkeypatch.setenv("GCP_REGION", "europe-west4")
-    monkeypatch.delenv("HRZ_REGISTRY_ALLOWED_REGIONS", raising=False)
+    monkeypatch.delenv("AGENT_REGISTRY_ALLOWED_REGIONS", raising=False)
     with pytest.raises(ResidencyError):
         Settings.load(CONFIG_PATH)
 
@@ -55,4 +55,4 @@ def test_allowlist_defaults_to_the_reference_region() -> None:
 
 def test_shipped_settings_yaml_carries_the_allowlist() -> None:
     text = CONFIG_PATH.read_text(encoding="utf-8")
-    assert "allowed_regions: ${HRZ_REGISTRY_ALLOWED_REGIONS:-asia-southeast1}" in text
+    assert "allowed_regions: ${AGENT_REGISTRY_ALLOWED_REGIONS:-asia-southeast1}" in text
