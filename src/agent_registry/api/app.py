@@ -33,6 +33,12 @@ from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, HTTPException, Response, status
 from hex_service_kit import read_env_setting
+from hex_service_kit.capabilities import (
+    AssuranceLevel,
+    Capability,
+    CapabilityManifest,
+    CapabilityMode,
+)
 from hex_service_kit.web import add_loopback_exposure_guard
 
 from ..cards import card_from_dict, card_to_dict
@@ -50,7 +56,6 @@ from ..release_verifier import (
 from ..schemas import (
     AgentCardModel,
     CapabilityManifestModel,
-    CapabilityModel,
     HealthResponse,
     ReleaseRequestModel,
 )
@@ -187,6 +192,33 @@ def capabilities(settings: SettingsDep) -> CapabilityManifestModel:
     return _capability_manifest(settings)
 
 
+def _capability(
+    *,
+    name: str,
+    available: bool,
+    mode: str,
+    assurance: str,
+    provider: str = "",
+    reason: str = "",
+    required_for_production: bool = False,
+) -> Capability:
+    """Build a kit :class:`Capability` from this service, VALIDATING both vocabularies.
+
+    The enum constructors are the point rather than a formality: a mode or an assurance level
+    this fleet does not define now raises here, instead of being served as a string that reads
+    like it means something. The strings themselves are unchanged on the wire.
+    """
+    return Capability(
+        name=name,
+        available=available,
+        mode=CapabilityMode(mode),
+        assurance=AssuranceLevel(assurance),
+        provider=provider,
+        reason=reason,
+        required_for_production=required_for_production,
+    )
+
+
 def _capability_manifest(settings: Settings) -> CapabilityManifestModel:
     demo_only = settings.profile == "local"
     managed = settings.profile == "gcp"
@@ -209,7 +241,7 @@ def _capability_manifest(settings: Settings) -> CapabilityManifestModel:
         ("release-governance", "registry lifecycle policy", release_configured),
     ):
         items.append(
-            CapabilityModel(
+            _capability(
                 name=name,
                 available=local_or_managed and (demo_only or configured),
                 mode="local" if demo_only else ("managed" if managed else "disabled"),
@@ -232,7 +264,7 @@ def _capability_manifest(settings: Settings) -> CapabilityManifestModel:
             )
         )
     items.append(
-        CapabilityModel(
+        _capability(
             name="audit-linkage",
             available=managed and bool(settings.registry.observability_url),
             mode="external" if managed else "disabled",
@@ -254,16 +286,17 @@ def _capability_manifest(settings: Settings) -> CapabilityManifestModel:
             required_for_production=True,
         )
     )
-    production_ready = not demo_only and all(
-        item.available and item.assurance == "attested" for item in items
-    )
-    return CapabilityManifestModel(
-        service="agent-registry",
-        profile=settings.profile,
-        region=settings.region,
-        capabilities=items,
-        demo_only=demo_only,
-        production_ready=production_ready,
+    # production_ready is NOT recomputed here: the kit manifest derives it from the
+    # very capabilities just built, so the served flag and the rule behind it cannot
+    # disagree. It used to be written out a second time, right above this line.
+    return CapabilityManifestModel.from_manifest(
+        CapabilityManifest(
+            service="agent-registry",
+            profile=settings.profile,
+            region=settings.region,
+            capabilities=tuple(items),
+            demo_only=demo_only,
+        )
     )
 
 
