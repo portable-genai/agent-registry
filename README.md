@@ -412,7 +412,7 @@ flowchart LR
   root --> tests["tests/<br/># offline pytest suite"]
   root --> evald["eval/run_eval.py<br/># offline promotion gate"]
   root --> infra["infra/terraform/<br/># Cloud Run + AlloyDB/Firestore + IAM/WIF + CMEK"]
-  root --> meta["Dockerfile · Makefile · pyproject.toml<br/>.github/workflows/ci.yaml # ruff + mypy + pytest + eval<br/>LICENSE (Apache-2.0)"]
+  root --> meta["Dockerfile · Makefile · pyproject.toml<br/>make check # ruff + mypy + pytest + eval<br/>LICENSE (Apache-2.0)"]
 
   src --> srcfiles["__init__.py # package: Hrz3 catalog system identity<br/>config.py # Settings (asia-southeast1 pinned) + ${ENV:-default}<br/>models.py # AgentCard / AgentSkill / Ownership / Lifecycle<br/>cards.py # AgentCard &lt;-&gt; SPEC §6 JSON (single source of truth)<br/>schemas.py # Pydantic wire contract<br/>self_card.py # the registry's own AgentCard<br/>container.py # profile -&gt; adapter binding"]
   src --> ports["ports/registry.py # AgentRegistryPort Protocol"]
