@@ -25,7 +25,7 @@ adapters under `src/agent_registry/adapters/`.
 | **P-05** | Input/output safety | n/a at this service: Hrz3 governs which agents may run and what they may call; prompt/response screening is Hrz1's responsibility (`agent-guardrail-gateway`). Hrz3 carries the scopes Hrz1 enforces | |
 | **P-06** | Human-in-the-loop / maker-checker | Lifecycle gating: an agent is only discoverable for production routing when `lifecycle` is `active` / `deprecated`; promotion from `draft` is the maker-checker step | `models.py` (`Lifecycle`, `AgentCard.discoverable`) |
 | **P-07** | Immutable audit trail with provenance | The catalog is the system of record for *which* agents exist and *who* owns them; the managed store is CMEK-encrypted and the write path is an idempotent, owner-stamped upsert. Cross-service audit is Hrz5 (`agent-observability`) | `adapters/gcp/alloydb_registry.py`, `models.py` (`Ownership`) |
-| **P-08** | Model risk / quality gate before promotion | Offline promotion gate scoring catalog-correctness invariants (upsert idempotency, round-trip fidelity, resolve accuracy, governance preservation); CI blocks on a non-zero exit | `eval/run_eval.py`, the hosted Cloud Build check (eval step) |
+| **P-08** | Model risk / quality gate before promotion | Offline promotion gate scoring catalog-correctness invariants (upsert idempotency, round-trip fidelity, resolve accuracy, governance preservation); CI blocks on a non-zero exit | `eval/run_eval.py`, the hosted GitHub Actions check (eval step) |
 | **P-09** | Observability without exposing sensitive content | The registry stores no message content; logs carry catalog operations only | `api/app.py`, `adapters/*` |
 | **P-10** | Cost / FinOps transparency | Cost and latency are sized with the shared interactive calculator | `cost-latency-calculator.html`, `README` (Cost and latency) |
 | **P-11** | Resilience / graceful degradation | `register` is an idempotent upsert (re-publishing on deploy never duplicates); `deprecated` cards stay resolvable so in-flight peers degrade gracefully | `adapters/local/sqlite_registry.py`, `models.py` (`Lifecycle.DEPRECATED`) |
@@ -41,7 +41,7 @@ adapters under `src/agent_registry/adapters/`.
 | **R2** | Region pinned for residency | The selected region is used across the store, KMS and runtime; default `asia-southeast1`, and a region outside `allowed_regions` fails at plan time and at process start | `config/settings.yaml`, `src/agent_registry/config.py`, `infra/terraform/variables.tf`, `infra/terraform/org_policy.tf` |
 | **R3** | Lazy SDK imports / SDK-free offline path | All google-cloud imports are lazy; the `local` path imports no google-cloud package | `adapters/gcp/*` (lazy), `adapters/local/*`, `tests/test_contract.py` |
 | **R4** | Kill shadow AI | Every agent must publish an `AgentCard` with an `owner` before it is discoverable; unregistered agents are invisible to orchestrators | `models.py` (`Ownership`), `README` (Governance mapping) |
-| **R5** | Eval / quality gate in CI | The offline eval gate runs in CI and blocks on failure | `eval/run_eval.py`, the hosted Cloud Build check |
+| **R5** | Eval / quality gate in CI | The offline eval gate runs in CI and blocks on failure | `eval/run_eval.py`, the hosted GitHub Actions check |
 | **R6** | Reversible deployment | Three profiles behind one port; `local` runs off-cloud, `onprem` is the fail-fast exit | `config/settings.yaml` (`adapters:`), `container.py` |
 
 ---

@@ -103,7 +103,7 @@ make smoke   # register a card via the CLI, then list it back
 make check   # the full gate: ruff check + ruff format --check + mypy src + pytest + eval
 ```
 
-`make check` is the CI gate (the hosted Cloud Build check) and runs entirely offline on the
+`make check` is the CI gate (the hosted GitHub Actions check) and runs entirely offline on the
 `local` profile with no Google Cloud SDKs installed. The CLI honours `AGENT_REGISTRY_PROFILE`;
 under `onprem` every command exits `2` with the migration message (see
 [`onprem-migration.md`](onprem-migration.md)).
