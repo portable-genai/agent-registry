@@ -78,5 +78,5 @@ terraform apply \
 - Locking the log bucket retention cannot be undone. Keep `log_bucket_locked = false` in
   sandboxes and `true` everywhere a regulator would look.
 - `terraform fmt -check` and `terraform validate` run in CI with no cloud credentials
-  (the hosted Cloud Build check, job `terraform`). Applying this configuration against a real
+  (the hosted GitHub Actions check, job `terraform`). Applying this configuration against a real
   project, and the live enforcement evidence that follows, is deployment work, not repo work.
