@@ -7,7 +7,7 @@ here. Read it first. This file carries only what is specific to this one.
 
 ## What this is
 
-Catalog id **Hrz3**. The governed catalog of A2A/MCP AgentCards for the Horizon platform.
+Catalog id `agent-registry`. The governed catalog of A2A/MCP AgentCards for the Horizon platform.
 Control plane only: it stores and serves agent metadata, runs no model, and holds no customer
 content.
 

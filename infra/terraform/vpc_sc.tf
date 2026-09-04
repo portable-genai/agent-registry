@@ -19,7 +19,7 @@ resource "google_access_context_manager_service_perimeter" "registry" {
 
   parent = "accessPolicies/${var.access_policy_name}"
   name   = "accessPolicies/${var.access_policy_name}/servicePerimeters/${replace(local.service_name, "-", "_")}"
-  title  = "Hrz3 agent registry data perimeter"
+  title  = "agent-registry data perimeter"
 
   perimeter_type = "PERIMETER_TYPE_REGULAR"
 

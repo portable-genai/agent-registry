@@ -4,17 +4,17 @@ Drives the **real** registry through the governed-catalog lifecycle a platform o
 runs every day, entirely on the SDK-free ``local`` profile (SQLite catalog, no Google
 Cloud, no API key, no emulator):
 
-1. **Empty catalog, self-describing.** A fresh registry already serves its own AgentCard
-   at ``/.well-known/agent-card.json`` (skills: register / resolve / discover).
-2. **Register the gallery.** Four synthetic Horizon-platform agents publish (upsert) their
-   AgentCards, each carrying A3 governance metadata (owner, lifecycle, scopes, protocols).
-3. **Discover safely.** Governance inventory lists every draft, while public A2A discovery
-   exposes only released agents. Direct and passthrough draft resolution both fail closed.
-4. **Govern (rule R4 — kill shadow AI).** Every external card enters as draft. A dedicated
-   release transition requires an attested Hrz4 EvalRun plus an Hrz5 audit-event reference;
-   an unowned card cannot pass that transition.
-5. **Reversibility (P-02).** The same command under ``AGENT_REGISTRY_PROFILE=onprem`` fails
-   fast (exit 2) with the migration message — the contract is identical across profiles.
+1. **Empty catalog, self-describing.** A fresh registry already serves its own AgentCard at
+   ``/.well-known/agent-card.json`` (skills: register / resolve / discover). 2. **Register the
+   gallery.** Four synthetic Horizon-platform agents publish (upsert) their AgentCards, each
+   carrying A3 governance metadata (owner, lifecycle, scopes, protocols). 3. **Discover safely.**
+   Governance inventory lists every draft, while public A2A discovery exposes only released agents.
+   Direct and passthrough draft resolution both fail closed. 4. **Govern (rule R4 — kill shadow
+   AI).** Every external card enters as draft. A dedicated release transition requires an attested
+   model-quality-gate EvalRun plus an agent-observability-event reference; an unowned card cannot
+   pass that transition. 5. **Reversibility (P-02).** The same command under
+   ``AGENT_REGISTRY_PROFILE=onprem`` fails fast (exit 2) with the migration message — the contract
+   is identical across profiles.
 
 Two surfaces, same domain: the **CLI** (``agent-registry``) and the **REST API**
 (``agent_registry.api.app:app`` via an in-process FastAPI ``TestClient``, so no network /
@@ -79,7 +79,8 @@ SEED_GALLERY: list[dict] = [
     },
     {
         "name": "guardrail-gateway",
-        "description": "Horizon guardrail gateway — PII screen + redact in front of every model call.",
+        "description": "Horizon guardrail gateway — PII screen + redact in front of every model "
+        "call.",
         "url": "https://guardrail-gateway.asia-southeast1.example/a2a",
         "version": "0.9.0",
         "provider": "agent-guardrail-gateway",
@@ -132,7 +133,7 @@ SEED_GALLERY: list[dict] = [
     },
 ]
 
-# The agent we will promote using linked Hrz4/Hrz5 evidence.
+# The agent we will promote using linked model-quality-gate, agent-observability evidence.
 BUMP_NAME = "guardrail-gateway"
 
 
@@ -383,7 +384,8 @@ def _run_demo(out_path: str | None, demo_db: str) -> None:
     print(
         "- One catalog, three profiles: identical AgentCard contract across local / gcp / "
         "onprem.\n"
-        "- New cards are drafts; activation requires an attested Hrz4 EvalRun and Hrz5 audit link.\n"
+        "- New cards are drafts; activation requires an attested model-quality-gate EvalRun and "
+        "agent-observability link.\n"
         "- Governance is additive: a plain A2A peer reads six fields; the platform relies on\n"
         "  owner / lifecycle / scopes to kill shadow AI (R4) and enforce least privilege.\n"
         "- Everything above ran offline on the local SQLite catalog — no GCP, no API key."

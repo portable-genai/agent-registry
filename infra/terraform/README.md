@@ -1,6 +1,6 @@
-# Hrz3 Agent Registry: Terraform
+# `agent-registry`: Terraform
 
-Provisions the GCP footprint for **Hrz3 `agent-registry`**. The region is configurable,
+Provisions the GCP footprint for **`agent-registry`**. The region is configurable,
 defaults to **`asia-southeast1`**, and must be in `allowed_regions`. The catalog store backend is
 selectable (`alloydb` default, or `firestore`).
 
@@ -72,7 +72,7 @@ terraform apply \
 - Residency is enforced three times from one allowlist: `terraform plan` validation, the
   `gcp.resourceLocations` Org Policy, and a fail-closed check when the application loads its
   settings (`AGENT_REGISTRY_ALLOWED_REGIONS`, see `src/agent_registry/config.py`).
-- The VPC-SC perimeter starts in dry run. Watch the `Hrz3 registry: VPC-SC dry-run violation`
+- The VPC-SC perimeter starts in dry run. Watch the ``agent-registry`: VPC-SC dry-run violation`
   alert until it is silent, then set `vpc_sc_enforce = true`. The same service list is used in
   both modes, so enforcement cannot exceed what dry run rehearsed.
 - Locking the log bucket retention cannot be undone. Keep `log_bucket_locked = false` in

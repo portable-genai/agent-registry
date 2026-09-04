@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded, executable portability proof for Hrz3.
+"""Bounded, executable portability proof for agent-registry.
 
 This proof runs offline. It checks the complete profile map, deterministic SQLite behavior,
 SDK-free managed construction, fail-fast on-prem behavior and unknown-selector rejection.
@@ -54,7 +54,7 @@ def _local_result() -> tuple[str, tuple[str, ...]]:
 
 
 def main() -> int:
-    print("Hrz3 bounded portability proof")
+    print("agent-registry bounded portability proof")
     settings = Settings.load()
     _require(set(settings.adapters) == _PORTS, "port set")
     _require(

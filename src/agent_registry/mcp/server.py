@@ -38,7 +38,8 @@ def build_handlers(container: Container) -> dict[str, mcpserve.Handler]:
 def build_server(container: Container | None = None) -> Any:
     """Build the MCP server for A3's catalog, refusing on any catalog/handler mismatch.
 
-    No audit tools are attached here. A3 is a control plane whose own trail is Hrz5's concern,
+    No audit tools are attached here. A3 is a control plane whose own trail is agent-observability's
+    concern,
     and attaching an evidence surface to the directory would put two unrelated things behind one
     endpoint.
     """

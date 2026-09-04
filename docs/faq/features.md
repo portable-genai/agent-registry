@@ -1,13 +1,13 @@
 # Features FAQ
 
-## What does Hrz3 own?
+## What does `agent-registry` own?
 
 It owns agent discovery metadata: stable names, owners, lifecycle, scopes, protocols, skills and
 endpoints. It does not proxy MCP or A2A task traffic.
 
 ## Which adjacent systems own runtime controls?
 
-Hrz1 owns safety, Hrz2 knowledge, Hrz4 promotion, Hrz5 audit and Hrz7 manual review. Hrz3 records
+`agent-guardrail-gateway` owns safety, `enterprise-knowledge-base` knowledge, `model-quality-gate` promotion, `agent-observability` and `human-review-console` manual review. `agent-registry` records
 the agent metadata those controls use.
 
 ## Are retired agents deleted?

@@ -1,6 +1,6 @@
 # On-prem migration (exit / portability): reversibility principle P-02
 
-The whole point of the ports-and-adapters shape is that Hrz3's exit story is **demonstrable,
+The whole point of the ports-and-adapters shape is that `agent-registry`'s exit story is **demonstrable,
 not aspirational**. Moving the governed catalog off the managed GCP stack onto a sovereign /
 on-premise platform (the Google Distributed Cloud target) is a one-line profile change
 (`AGENT_REGISTRY_PROFILE=onprem`) plus filling in the adapter body. The domain, the HTTP API,
@@ -25,7 +25,7 @@ no `google-cloud-*` installed, and confirms the fail-fast behaviour.
 
 ## The migration checklist
 
-Hrz3 has a single outbound port, so the migration is bounded to one adapter. To run the
+`agent-registry` has a single outbound port, so the migration is bounded to one adapter. To run the
 registry on a sovereign / on-premise platform, implement this adapter body (the only file
 that changes):
 

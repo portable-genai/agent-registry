@@ -1,6 +1,6 @@
 # WORM log sink and posture alerts.
 #
-# Audit CONTENT for agent activity is Hrz5's job (COMPLIANCE P-07). What lives here is the
+# Audit CONTENT for agent activity is agent-observability's job (COMPLIANCE P-07). What lives here is the
 # platform-side, tamper-evident retention of the control-plane's own admin and data-access
 # audit logs: a regional, CMEK-encrypted bucket with a LOCKED retention policy, which no
 # principal (including a project owner) can shorten or delete early.
@@ -72,7 +72,7 @@ resource "google_monitoring_alert_policy" "vpc_sc_dry_run_violation" {
   count = local.vpc_sc_enabled ? 1 : 0
 
   project      = var.project_id
-  display_name = "Hrz3 registry: VPC-SC dry-run violation"
+  display_name = "agent-registry: VPC-SC dry-run violation"
   combiner     = "OR"
 
   conditions {
@@ -95,14 +95,14 @@ resource "google_monitoring_alert_policy" "vpc_sc_dry_run_violation" {
   notification_channels = var.notification_channels
 
   documentation {
-    content   = "A call would have been blocked by the Hrz3 registry perimeter. Review before setting vpc_sc_enforce = true."
+    content   = "A call would have been blocked by the agent-registry perimeter. Review before setting vpc_sc_enforce = true."
     mime_type = "text/markdown"
   }
 }
 
 resource "google_monitoring_alert_policy" "residency_denial" {
   project      = var.project_id
-  display_name = "Hrz3 registry: resource-location policy denial"
+  display_name = "agent-registry: resource-location policy denial"
   combiner     = "OR"
 
   conditions {

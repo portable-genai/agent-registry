@@ -5,17 +5,17 @@ serialization of them and the port contracts. A cloud or model SDK import there 
 wearing a green gate. The rule is an allowlist rather than an SDK blocklist, because a
 blocklist rots the day a vendor renames a distribution.
 
-THIS REPOSITORY HAS NO ``domain/`` PACKAGE. Hrz3 is a small control plane, so its core sits
-flat beside the wiring, and AGENTS.md already names it: ``models.py`` (the AgentCard and its
+THIS REPOSITORY HAS NO ``domain/`` PACKAGE. agent-registry is a small control plane, so its core
+sits flat beside the wiring, and AGENTS.md already names it: ``models.py`` (the AgentCard and its
 lifecycle types), ``cards.py`` (their dict form), ``self_card.py`` (the registry's own card),
 ``release_policy.py`` (the promotion rules) and the ``ports/`` package (the Protocol).
 :data:`CORE_LAYERS` therefore names modules as well as directories, and the scan below accepts
-either. Everything else under ``src/agent_registry`` is deliberately outside that boundary and
-free to depend on its framework: ``config.py`` and ``schemas.py`` are the YAML / pydantic edge,
-``container.py`` is the wiring, and ``api/``, ``cli/`` and ``adapters/`` are adapters by
-definition. ``release_verifier.py`` is outside it too, and deliberately: it declares a port
-Protocol but also carries the concrete verifier that fetches evidence over HTTP, so it imports
-``httpx``. A port whose module also holds an adapter is not core, whatever the file is called.
+either. Everything else under ``src/agent_registry`` is deliberately outside that boundary and free
+to depend on its framework: ``config.py`` and ``schemas.py`` are the YAML / pydantic edge,
+``container.py`` is the wiring, and ``api/``, ``cli/`` and ``adapters/`` are adapters by definition.
+``release_verifier.py`` is outside it too, and deliberately: it declares a port Protocol but also
+carries the concrete verifier that fetches evidence over HTTP, so it imports ``httpx``. A port whose
+module also holds an adapter is not core, whatever the file is called.
 
 Twin of the core-purity section of the fleet-wide portfolio gate,
 which repeats this scan across every repository in the workspace. This copy travels with the

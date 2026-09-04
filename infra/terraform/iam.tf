@@ -46,7 +46,7 @@ resource "google_project_iam_member" "runtime_metric_writer" {
   member  = "serviceAccount:${google_service_account.runtime.email}"
 }
 
-# Hrz3 verifies evidence directly under its keyless Cloud Run workload identity.
+# agent-registry verifies evidence directly under its keyless Cloud Run workload identity.
 resource "google_cloud_run_v2_service_iam_member" "quality_evidence_reader" {
   project  = var.quality_service_project_id != "" ? var.quality_service_project_id : var.project_id
   location = local.region

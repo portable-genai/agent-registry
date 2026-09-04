@@ -1,8 +1,8 @@
-# Runbook: Hrz3 Agent Registry & Governance
+# Runbook: `agent-registry`
 
-Operational notes for deploying and running Hrz3 (`agent-registry`) on Cloud Run in
+Operational notes for deploying and running `agent-registry` on Cloud Run in
 `asia-southeast1`. This is a reference build; adapt it to your own change-management and
-platform sign-off before any live use. Hrz3 is a **control-plane service**: a governed
+platform sign-off before any live use. `agent-registry` is a **control-plane service**: a governed
 catalog with deterministic invariants (idempotent upsert keyed on `name`, no floating
 endpoints). It has **no end-user UI** and **no grounded LLM / ADK agent**, so there is no
 model-serving, prompt, or eval-of-generation surface to operate; the eval gate here checks
@@ -67,7 +67,7 @@ loudly rather than quietly writing agent metadata abroad:
 Approving a new region therefore means one change to `allowed_regions` in tfvars, not a fork.
 
 **Perimeter rollout.** The VPC Service Controls perimeter is created in dry run
-(`vpc_sc_enforce = false`). Watch the `Hrz3 registry: VPC-SC dry-run violation` alert; when it
+(`vpc_sc_enforce = false`). Watch the ``agent-registry`: VPC-SC dry-run violation` alert; when it
 stays silent through a full business cycle, set `vpc_sc_enforce = true` to promote the same
 service list into enforcement. Roll back by flipping it to `false`.
 
@@ -116,5 +116,5 @@ under `onprem` every command exits `2` with the migration message (see
 | CLI exits `2` on every command | Running under the `onprem` profile by design | Switch to `local` or `gcp`; `2` is the intended fail-fast |
 | `401` on `POST /v1/agents` | `AGENT_REGISTRY_S2S_TOKEN` set but no / wrong bearer token | Send `Authorization: Bearer <token>`, or unset the token for loopback dev |
 | `403` on catalog routes under `gcp` | Caller service account not in the allowlist | Add it to `AGENT_REGISTRY_S2S_ALLOWED_CALLERS` |
-| Rsk1 cannot resolve agents in `profile: platform` | `AGENT_REGISTRY_URL` not pointing at this service | Set it to the `service_url` output (defaults to `http://localhost:8083`) |
+| `compliance-advisory` cannot resolve agents in `profile: platform` | `AGENT_REGISTRY_URL` not pointing at this service | Set it to the `service_url` output (defaults to `http://localhost:8083`) |
 | A managed import fails under `local` | `[gcp]` extra not installed and a gcp branch was taken | Stay SDK-free on `local`, or `pip install -e ".[gcp]"` for the managed path |

@@ -1,8 +1,8 @@
-# SPEC: Hrz3 Agent Registry & Governance (`agent-registry`)
+# SPEC: `agent-registry` (`agent-registry`)
 
 The governed catalog/gallery of agents for the Horizon platform. This SPEC pins the
-deployment profiles, the one port, and the HTTP contract Hrz3 **defines** for sibling services
-(Rsk1's `RemoteRegistryAdapter` consumes it).
+deployment profiles, the one port, and the HTTP contract `agent-registry` **defines** for sibling services
+(`compliance-advisory`'s `RemoteRegistryAdapter` consumes it).
 
 **Documentation authority.** `SPEC.md` (this file) > `ARCHITECTURE.md` > `COMPLIANCE.md` >
 `README.md`, with everything under `docs/` below README. On any disagreement this file wins and
@@ -86,7 +86,7 @@ catalog-correctness invariants (`upsert_idempotency`, `roundtrip_fidelity`,
 
 ---
 
-## 5. HTTP contract (defined by Hrz3, consumed by Rsk1)
+## 5. HTTP contract (defined by `agent-registry`, consumed by `compliance-advisory`)
 
 All JSON field names mirror the domain dataclasses; enums are strings. The **Auth** column
 marks which routes require service-to-service auth (see §5.1); the rest stay open.
