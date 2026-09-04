@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "agent-registry"
 version = "0.0.1"
-description = "A3 Agent Registry & Governance — governed catalog/gallery of agents (identity, ownership, scoped entitlements, A2A v1.0 + MCP 2026-07-28 discovery) for the Horizon agent platform, built ports-and-adapters on GCP (asia-southeast1)."
+description = "Agent Registry & Governance — governed catalog/gallery of agents (identity, ownership, scoped entitlements, A2A v1.0 + MCP 2026-07-28 discovery) for the Horizon agent platform, built ports-and-adapters on GCP (asia-southeast1)."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }

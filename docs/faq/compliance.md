@@ -7,7 +7,7 @@ interpretation, operating effectiveness and regulator crosswalks.
 
 ## Where does durable audit belong?
 
-Hrz5 owns cross-service audit. Hrz3 remains the metadata registry and does not duplicate an audit
+`agent-observability` owns cross-service audit. `agent-registry` remains the metadata registry and does not duplicate an audit
 store.
 
 ## What should an adopter retain?

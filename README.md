@@ -1,4 +1,4 @@
-# Hrz3: Agent Registry & Governance (`agent-registry`)
+# `agent-registry`: Agent Registry & Governance (`agent-registry`)
 
 **Industries:** All GenAI (cross-industry)
 
@@ -7,12 +7,12 @@
 > what **kills shadow AI**: dependency rule **R4**. An agent that is not in the registry is
 > not governed, not discoverable, and not allowed to run on the platform.
 
-`agent-registry` is **catalog system Hrz3**, one of the three mandatory platform
-dependencies of the **Rsk1 Compliance Assistant** (`compliance-advisory`), alongside
-**Hrz1** Guardrail Gateway (`agent-guardrail-gateway`) and **Hrz5** Observability/Audit
-(`agent-observability`). Its HTTP API implements the Hrz3 contract in
+`agent-registry` is **catalog system `agent-registry`**, one of the three mandatory platform
+dependencies of the **`compliance-advisory`** (`compliance-advisory`), alongside
+`agent-guardrail-gateway` (`agent-guardrail-gateway`) and `agent-observability`
+(`agent-observability`). Its HTTP API implements the `agent-registry` contract in
 [`SPEC.md` §6](https://github.com/portable-genai/compliance-advisory/blob/main/SPEC.md)
-exactly, so Rsk1's `RemoteRegistryAdapter` talks to it without any translation.
+exactly, so `compliance-advisory`'s `RemoteRegistryAdapter` talks to it without any translation.
 
 Key guides: [demo](DEMO.md), [adoption](docs/ADOPTING.md),
 [FAQs](docs/faq/README.md),
@@ -48,20 +48,20 @@ branch, so the `local` path imports no google-cloud package.
 
 ---
 
-## What Hrz3 does
+## What `agent-registry` does
 
-| Concern | How Hrz3 provides it |
+| Concern | How `agent-registry` provides it |
 |---|---|
 | **Identity** | Every agent has a stable `name` (the catalog key) and a published `AgentCard`. |
 | **Ownership** | `governance.owner` (team / contact / organization), the anti-shadow-AI anchor. |
 | **Scoped entitlements** | `governance.scopes`: least-privilege scopes the agent may exercise (e.g. `mcp:tool:agent_search.query`, `a2a:invoke:agent-guardrail-gateway`). |
 | **A2A / MCP interop** | The A2A AgentCard served at `/.well-known/agent-card.json`, plus a per-agent `/v1/agents/{name}/card` passthrough. |
 | **Discovery** | `GET /v1/agents` exposes only release-approved cards; governance inventory has a separate endpoint. |
-| **Lifecycle governance** | New cards are forced to `draft`. A server-side evidence verifier resolves Hrz4/Hrz5 references before activation. |
+| **Lifecycle governance** | New cards are forced to `draft`. A server-side evidence verifier resolves `model-quality-gate`, `agent-observability` references before activation. |
 
 ---
 
-## HTTP API (SPEC §6, Hrz3)
+## HTTP API (SPEC §6, `agent-registry`)
 
 All JSON field names mirror the domain dataclasses; enums are strings. The **Auth** column
 marks the routes that require service-to-service auth (see below).
@@ -98,7 +98,7 @@ sees only these and ignores the rest:
 ```json
 {
   "name": "compliance-advisory",
-  "description": "Rsk1 Compliance Assistant, grounded RAG over MAS/HKMA/APRA/FSA.",
+  "description": "`compliance-advisory`, grounded RAG over MAS/HKMA/APRA/FSA.",
   "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.0.0",
   "provider": "compliance-advisory",
@@ -108,7 +108,7 @@ sees only these and ignores the rest:
 }
 ```
 
-Hrz3 layers **governance** on top in an *additive* `governance` block, so the catalog can
+`agent-registry` layers **governance** on top in an *additive* `governance` block, so the catalog can
 enforce ownership and least-privilege without breaking vanilla A2A clients:
 
 ```json
@@ -127,9 +127,9 @@ enforce ownership and least-privilege without breaking vanilla A2A clients:
 deploy and the row updates in place. It cannot replace the reserved registry self-card and
 cannot publish an active card directly.
 
-The release request contains identifiers only. In `gcp`, Hrz3 calls the trusted
+The release request contains identifiers only. In `gcp`, `agent-registry` calls the trusted
 `RELEASE_VERIFIER_URL` with `RELEASE_VERIFIER_TOKEN`; the verifier returns the
-passing/attested Hrz4 evidence, durable reference, Hrz5 audit linkage, approver and release
+passing/attested `model-quality-gate` evidence, durable reference, `agent-observability` linkage, approver and release
 time. Caller-supplied status, attestation, evidence URI or approver fields are never accepted.
 The laptop profile recognizes only exact fictional demo identifiers derived from agent name
 and version, so the release flow remains functional without presenting demo strings as
@@ -139,25 +139,25 @@ production evidence.
 
 ## Interop: A2A v1.0 + MCP 2026-07-28
 
-Hrz3 is built for the two interop standards the platform pins (SPEC §3):
+`agent-registry` is built for the two interop standards the platform pins (SPEC §3):
 
 **A2A v1.0 (Agent-to-Agent).** Under A2A, an agent advertises its capabilities as an
 **AgentCard** served at the well-known path `/.well-known/agent-card.json`; a peer fetches
 that card to learn the agent's `skills`, endpoint `url` and `version` *before* initiating a
-task. Hrz3 is itself an A2A agent: `GET /.well-known/agent-card.json` returns the registry's
-own card (skills: `register`, `resolve`, `discover`). For every *registered* agent, Hrz3 also
+task. `agent-registry` is itself an A2A agent: `GET /.well-known/agent-card.json` returns the registry's
+own card (skills: `register`, `resolve`, `discover`). For every *registered* agent, `agent-registry` also
 exposes the card it would serve at its own well-known path via the passthrough
 `GET /v1/agents/{name}/card`, so an orchestrator can resolve a peer's card through the
-catalog without first knowing the peer's URL. This makes Hrz3 the **A2A discovery hub**.
+catalog without first knowing the peer's URL. This makes `agent-registry` the **A2A discovery hub**.
 
 **MCP 2026-07-28 (Model Context Protocol).** MCP governs how agents reach *tools / context
-servers*. Hrz3 does not proxy MCP traffic; it governs it. The `governance.scopes` on a card
+servers*. `agent-registry` does not proxy MCP traffic; it governs it. The `governance.scopes` on a card
 declare exactly which MCP tools an agent is entitled to call (e.g.
 `mcp:tool:agent_search.query`) and which A2A peers it may invoke. The platform's guardrail
 and runtime layers read these scopes from the catalog to enforce least privilege, and
 `governance.protocols` records which interop protocols (`a2a`, `mcp`) each agent speaks so
 discovery can filter by capability. Pinning to the **2026-07-28** MCP revision keeps the
-scope vocabulary aligned across Hrz1 (guardrail), Hrz3 (registry) and the agents themselves.
+scope vocabulary aligned across `agent-guardrail-gateway` (guardrail), `agent-registry` (registry) and the agents themselves.
 
 ---
 
@@ -177,7 +177,7 @@ flowchart LR
 ```
 
 - **One port**, `AgentRegistryPort`: `register(card)` / `get(name)` / `list()`. Same shape
-  as Rsk1's `AgentRegistryPort`, so the in-process contract is identical on both ends of the wire.
+  as `compliance-advisory`'s `AgentRegistryPort`, so the in-process contract is identical on both ends of the wire.
 - **`adapters/gcp/`**: managed-store adapters. **AlloyDB** for PostgreSQL (default; card
   stored as `JSONB`, idempotent `INSERT ... ON CONFLICT DO UPDATE`) or **Firestore** in Native
   mode (one document per agent). **All Google Cloud SDK imports are lazy** (inside
@@ -226,7 +226,7 @@ export AGENT_REGISTRY_LOCAL_DB=/tmp/hrz-registry.db   # the SQLite catalog file 
 # Publish (upsert) an AgentCard, then read it back from the catalog.
 agent-registry register --card '{
   "name": "compliance-advisory",
-  "description": "Rsk1 Compliance Assistant",
+  "description": "`compliance-advisory`",
   "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.0.0",
   "provider": "compliance-advisory",
@@ -253,7 +253,7 @@ curl localhost:8083/.well-known/agent-card.json | jq
 
 curl -X POST localhost:8083/v1/agents -H 'content-type: application/json' -d '{
   "name": "compliance-advisory",
-  "description": "Rsk1 Compliance Assistant",
+  "description": "`compliance-advisory`",
   "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.0.0",
   "provider": "compliance-advisory",
@@ -278,11 +278,11 @@ Without `FIRESTORE_EMULATOR_HOST` (or without the `[gcp]` extra) the local profi
 SDK-free SQLite path. No google-cloud package is imported on the default path.
 ```
 
-Port **8083** matches Rsk1's `RemoteRegistryAdapter` default (`AGENT_REGISTRY_URL`,
-`http://localhost:8083`), so Rsk1 in `profile: platform` resolves agents from this service out
+Port **8083** matches `compliance-advisory`'s `RemoteRegistryAdapter` default (`AGENT_REGISTRY_URL`,
+`http://localhost:8083`), so `compliance-advisory` in `profile: platform` resolves agents from this service out
 of the box.
 
-### Rsk1 uses Hrz3 like this
+### `compliance-advisory` uses `agent-registry` like this
 
 ```python
 # compliance-advisory, profile: platform
@@ -323,8 +323,8 @@ What is covered:
 - **Card mapping** (`tests/test_cards.py`): SPEC §6 round-trip, governance round-trip,
   tolerant parsing of plain A2A cards, enum `.value` serialisation.
 - **HTTP contract** (`tests/test_api_contract.py`): all SPEC §6 endpoints, 404s, the
-  well-known card, the passthrough, and a test that re-implements Rsk1's `_parse_card` to prove
-  the response is exactly what the Rsk1 remote client reads.
+  well-known card, the passthrough, and a test that re-implements `compliance-advisory`'s `_parse_card` to prove
+  the response is exactly what the `compliance-advisory` remote client reads.
 
 ---
 
@@ -333,9 +333,9 @@ What is covered:
 `config/settings.yaml` is loaded into a single frozen `Settings` object with
 `${ENV:-default}` interpolation and handed to every adapter constructor.
 
-Managed release activation is fail-closed against a registry-owned policy: Hrz4 evidence
+Managed release activation is fail-closed against a registry-owned policy: `model-quality-gate` evidence
 must match the approved dataset digest, evaluator, threshold digest, artifact classes and
-red-team categories, with no unresolved review. The Hrz5 reviewer-only approval must be
+red-team categories, with no unresolved review. The `agent-observability` reviewer-only approval must be
 `allowed` and match the same policy version. Both reads use workload identity.
 
 | Setting | Env override | Default |
@@ -414,7 +414,7 @@ flowchart LR
   root --> infra["infra/terraform/<br/># Cloud Run + AlloyDB/Firestore + IAM/WIF + CMEK"]
   root --> meta["Dockerfile · Makefile · pyproject.toml<br/>make check # ruff + mypy + pytest + eval<br/>LICENSE (Apache-2.0)"]
 
-  src --> srcfiles["__init__.py # package: Hrz3 catalog system identity<br/>config.py # Settings (asia-southeast1 pinned) + ${ENV:-default}<br/>models.py # AgentCard / AgentSkill / Ownership / Lifecycle<br/>cards.py # AgentCard &lt;-&gt; SPEC §6 JSON (single source of truth)<br/>schemas.py # Pydantic wire contract<br/>self_card.py # the registry's own AgentCard<br/>container.py # profile -&gt; adapter binding"]
+  src --> srcfiles["__init__.py # package: `agent-registry` catalog system identity<br/>config.py # Settings (asia-southeast1 pinned) + ${ENV:-default}<br/>models.py # AgentCard / AgentSkill / Ownership / Lifecycle<br/>cards.py # AgentCard &lt;-&gt; SPEC §6 JSON (single source of truth)<br/>schemas.py # Pydantic wire contract<br/>self_card.py # the registry's own AgentCard<br/>container.py # profile -&gt; adapter binding"]
   src --> ports["ports/registry.py # AgentRegistryPort Protocol"]
   src --> adapters["adapters/"]
   src --> apiapp["api/app.py # FastAPI app: SPEC §6 endpoints"]
@@ -429,10 +429,10 @@ flowchart LR
 
 ## Governance mapping
 
-| Rule | How Hrz3 satisfies it |
+| Rule | How `agent-registry` satisfies it |
 |---|---|
 | **R4: kill shadow AI** | Every agent must publish an `AgentCard` with `owner` before it is discoverable; unregistered agents are invisible to orchestrators and the platform refuses to route to them. |
-| Least privilege | `governance.scopes` declares the exact MCP tools / A2A peers an agent may use; Hrz1 and the runtime enforce them. |
+| Least privilege | `governance.scopes` declares the exact MCP tools / A2A peers an agent may use; `agent-guardrail-gateway` and the runtime enforce them. |
 | Data residency | Catalog store (AlloyDB / Firestore), KMS key and Cloud Run service are pinned to the selected region with regional CMEK. |
 | Lifecycle control | `governance.lifecycle` gates production discoverability (`active`/`deprecated` discoverable, `retired` tombstoned). |
 
@@ -440,7 +440,7 @@ flowchart LR
 
 ## Cost and latency
 
-Size this system's cost and latency with the shared interactive calculator: [**live**](https://portable-genai.github.io/cost-latency-calculator/calc/calculator.html?system=Hrz3) or the [in-repo page](cost-latency-calculator.html). The engine and the pricing book are maintained once in [cost-latency-calculator](https://github.com/portable-genai/cost-latency-calculator).
+Size this system's cost and latency with the shared interactive calculator: [**live**](https://portable-genai.github.io/cost-latency-calculator/calc/calculator.html?system=agent-registry) or the [in-repo page](cost-latency-calculator.html). The engine and the pricing book are maintained once in [cost-latency-calculator](https://github.com/portable-genai/cost-latency-calculator).
 
 ## License
 

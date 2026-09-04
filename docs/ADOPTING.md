@@ -1,19 +1,19 @@
-# Adopting Hrz3
+# Adopting `agent-registry`
 
-Hrz3 can be consumed as the shared platform registry or forked when an institution needs
+`agent-registry` can be consumed as the shared platform registry or forked when an institution needs
 independent ownership, naming or release cadence. Prefer configuration and adapter replacement
 over changing the AgentCard contract.
 
 | Mode | Use when | Institution-owned changes |
 |---|---|---|
-| Consume Hrz3 | The shared REST and AgentCard contract fits | S2S identity, managed store, Terraform values |
-| Fork Hrz3 | Registry ownership or release cadence must be independent | Rename, adapters, deployment and regulator crosswalk |
+| Consume `agent-registry` | The shared REST and AgentCard contract fits | S2S identity, managed store, Terraform values |
+| Fork `agent-registry` | Registry ownership or release cadence must be independent | Rename, adapters, deployment and regulator crosswalk |
 | Implement the port | An existing catalog remains authoritative | New `AgentRegistryPort` adapter and explicit profile binding |
 
 Keep `models.py`, `cards.py`, `ports/`, `schemas.py` and the HTTP routes stable. Institution-owned
 surfaces are settings, adapters, identity policy, managed data infrastructure and the compliance
-crosswalk. Hrz3 owns agent identity, ownership, scopes and lifecycle metadata. Hrz1 owns runtime
-safety, Hrz2 governed knowledge, Hrz4 promotion, Hrz5 audit and Hrz7 human decisions.
+crosswalk. `agent-registry` owns agent identity, ownership, scopes and lifecycle metadata. `agent-guardrail-gateway` owns runtime
+safety, `enterprise-knowledge-base` governed knowledge, `model-quality-gate` promotion, `agent-observability` and `human-review-console` human decisions.
 
 ## Preview and apply a rename
 

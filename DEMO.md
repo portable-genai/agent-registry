@@ -1,6 +1,6 @@
-# Demo guide - Hrz3 Agent Registry & Governance (`agent-registry`)
+# Demo guide - `agent-registry` (`agent-registry`)
 
-Two ways to demo Hrz3, the governed catalog/gallery of agents for the Horizon platform:
+Two ways to demo `agent-registry`, the governed catalog/gallery of agents for the Horizon platform:
 
 - **Demo A - Local, offline (the headline flow):** a presenter-controlled terminal
   walkthrough that drives the **real** registry through its daily lifecycle - serve the
@@ -13,7 +13,7 @@ Two ways to demo Hrz3, the governed catalog/gallery of agents for the Horizon pl
 > The agent cards in this demo are **synthetic and FICTIONAL**. Do not register cards that
 > embed secrets or real production endpoints without your own security sign-off.
 
-Hrz3 is a **platform service**: a REST API plus a CLI, with **no web UI**. So both demos are
+`agent-registry` is a **platform service**: a REST API plus a CLI, with **no web UI**. So both demos are
 CLI- and curl-based - there is no browser / Playwright step.
 
 ---
@@ -33,7 +33,7 @@ Install/setup references (read these once):
 
 - Local install & profiles -> [README "Deployment profiles"](README.md#deployment-profiles)
   and [README "Run it locally"](README.md#run-it-locally-offline-no-gcp)
-- The HTTP contract -> [README "HTTP API (SPEC §6, Hrz3)"](README.md#http-api-spec-6-a3)
+- The HTTP contract -> [README "HTTP API (SPEC §6, `agent-registry`)"](README.md#http-api-spec-6-a3)
 - The demo scripts -> [`scripts/README.md`](scripts/README.md)
 - Terraform for the managed stack -> [`infra/terraform/README.md`](infra/terraform/README.md)
 - Config (`${ENV_VAR}` resolved at load) -> [`config/settings.yaml`](config/settings.yaml)
@@ -66,7 +66,7 @@ key - ideal for a laptop demo. Two ways to present it, in order of polish.
 ### 2.1 Guided, presenter-controlled walkthrough (recommended)
 
 The script narrates each step and **waits for you to press Enter** before running the real
-CLI/API call, so you control the pace. No browser - Hrz3 has no UI; the REST calls run against
+CLI/API call, so you control the pace. No browser - `agent-registry` has no UI; the REST calls run against
 an in-process FastAPI `TestClient` and the CLI runs in-process, so nothing needs a port.
 
 ```bash
@@ -76,10 +76,10 @@ PYTHONPATH=src python scripts/registry_demo.py     # or: make demo
 
 You step through, pressing Enter each time:
 
-1. **Self-describing registry** - `GET /.well-known/agent-card.json` returns Hrz3's own
+1. **Self-describing registry** - `GET /.well-known/agent-card.json` returns `agent-registry`'s own
    AgentCard (skills: register / resolve / discover) before any agent registers.
 2. **Register the gallery** - four FICTIONAL Horizon agents publish their cards (one via the
-   `agent-registry` CLI, the rest via `POST /v1/agents`), each with Hrz3 governance metadata
+   `agent-registry` CLI, the rest via `POST /v1/agents`), each with `agent-registry` governance metadata
    (owner / lifecycle / scopes / protocols).
 3. **Discover** - `GET /v1/agents` lists the gallery; `GET /v1/agents/{name}` and the A2A
    `/card` passthrough resolve a single agent.
@@ -113,7 +113,7 @@ rm -f "$AGENT_REGISTRY_LOCAL_DB"
 # Publish (upsert) an AgentCard, then read it back from the catalog.
 agent-registry register --card '{
   "name": "compliance-advisory",
-  "description": "Rsk1 Compliance Assistant (FICTIONAL).",
+  "description": "`compliance-advisory` (FICTIONAL).",
   "url": "https://compliance-advisory.asia-southeast1.example/a2a",
   "version": "1.2.0",
   "provider": "compliance-advisory",
@@ -140,7 +140,7 @@ AGENT_REGISTRY_PROFILE=onprem agent-registry list; echo "exit=$?"   # -> exit=2
 make run                                       # uvicorn on http://localhost:8083 (profile=local)
 
 curl -s localhost:8083/healthz
-curl -s localhost:8083/.well-known/agent-card.json | jq      # Hrz3's own card
+curl -s localhost:8083/.well-known/agent-card.json | jq      # `agent-registry`'s own card
 curl -s -X POST localhost:8083/v1/agents -H 'content-type: application/json' -d '{
   "name": "guardrail-gateway",
   "description": "Horizon guardrail gateway (FICTIONAL).",
@@ -204,7 +204,7 @@ Then exercise the same endpoints against the managed catalog:
 # Register an agent into the managed catalog:
 curl -s -X POST localhost:8083/v1/agents -H 'content-type: application/json' -d '{
   "name": "kyc-doc-extractor",
-  "description": "Doc1 KYC document extractor (FICTIONAL).",
+  "description": "`cdd-sow-research` KYC document extractor (FICTIONAL).",
   "url": "https://kyc-doc-extractor.asia-southeast1.example/a2a",
   "version": "2.0.0",
   "provider": "cdd-sow-research",
@@ -233,7 +233,7 @@ in `asia-southeast1` with CMEK ([README "Deployment profiles"](README.md#deploym
 
 - **One contract, three profiles.** `register` / `get` / `list` and the SPEC §6 AgentCard
   JSON are identical across `local` / `gcp` / `onprem`; only the adapter behind
-  `AgentRegistryPort` changes. Rsk1's `RemoteRegistryAdapter` talks to Hrz3 with no translation.
+  `AgentRegistryPort` changes. `compliance-advisory`'s `RemoteRegistryAdapter` talks to `agent-registry` with no translation.
 - **Register is an idempotent upsert** keyed on `name`, so an agent re-publishing its card on
   every deploy updates the row in place - safe to re-run, never duplicates.
 - **Governance kills shadow AI (rule R4).** Every card carries `governance.owner`; an unowned

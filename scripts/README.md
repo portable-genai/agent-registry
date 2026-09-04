@@ -1,7 +1,7 @@
-# Demo scripts - Hrz3 governed agent registry
+# Demo scripts - `agent-registry` governed agent registry
 
 These scripts are SDK-free and run against the offline `local` stack (SQLite catalog, no
-Google Cloud, no API key, no emulator). There is **no web UI**: Hrz3 is a platform service
+Google Cloud, no API key, no emulator). There is **no web UI**: `agent-registry` is a platform service
 (REST API + CLI), so the demo is a terminal walkthrough plus raw curl/CLI commands.
 
 Run from the repo root with the package on the path:
@@ -29,10 +29,10 @@ PYTHONPATH=src python scripts/registry_demo.py
 
 It steps through, pausing for Enter each time:
 
-1. **Self-describing registry** - `GET /.well-known/agent-card.json` returns Hrz3's own card
+1. **Self-describing registry** - `GET /.well-known/agent-card.json` returns `agent-registry`'s own card
    (skills: register / resolve / discover) before any agent registers.
 2. **Register the gallery** - publish four FICTIONAL agents (one via the `agent-registry`
-   CLI, the rest via `POST /v1/agents`), each carrying Hrz3 governance metadata.
+   CLI, the rest via `POST /v1/agents`), each carrying `agent-registry` governance metadata.
 3. **Discover** - `GET /v1/agents` lists the gallery; `GET /v1/agents/{name}` and the A2A
    `/card` passthrough resolve a single agent.
 4. **Govern (rule R4)** - re-publishing is an idempotent upsert keyed on `name` (version

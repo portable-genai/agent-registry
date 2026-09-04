@@ -130,4 +130,4 @@ def test_concurrent_demo_selftests_are_isolated() -> None:
         assert process.returncode == 0, output
         assert "lifecycle is now 'draft'" in output
         assert "EvalRun=eval-demo-guardrail-gateway-0.9.0" in output
-        assert "PASS Hrz3 demo self-test" in output
+        assert "PASS agent-registry demo self-test" in output

@@ -1,4 +1,4 @@
-"""Server-side verification of Hrz4 evaluation and Hrz5 audit evidence."""
+"""Server-side verification of model-quality-gate evaluation and agent-observability evidence."""
 
 from __future__ import annotations
 
@@ -61,11 +61,13 @@ class LocalDemoReleaseEvidenceVerifier:
 
 
 class RemoteReleaseEvidenceVerifier:
-    """Resolve immutable evidence directly from Hrz4 and Hrz5."""
+    """Resolve immutable evidence directly from model-quality-gate and agent-observability."""
 
     def __init__(self, settings: Settings) -> None:
-        self._quality_url = _validate_url(settings.registry.quality_url, "Hrz4")
-        self._observability_url = _validate_url(settings.registry.observability_url, "Hrz5")
+        self._quality_url = _validate_url(settings.registry.quality_url, "model-quality-gate")
+        self._observability_url = _validate_url(
+            settings.registry.observability_url, "agent-observability"
+        )
         self._policy = settings.registry
         required_policy = {
             "release_policy_version": self._policy.release_policy_version,
@@ -107,7 +109,9 @@ class RemoteReleaseEvidenceVerifier:
         except httpx.HTTPError as exc:
             raise ReleaseVerificationError(f"release verifier unavailable: {exc}") from exc
         if eval_response.status_code // 100 != 2 or audit_response.status_code // 100 != 2:
-            raise ReleaseVerificationError("Hrz4 or Hrz5 rejected referenced release evidence")
+            raise ReleaseVerificationError(
+                "model-quality-gate or agent-observability rejected referenced release evidence"
+            )
         evaluation = eval_response.json()
         audit = audit_response.json()
         if not isinstance(evaluation, dict) or not isinstance(audit, dict):
@@ -124,30 +128,46 @@ class RemoteReleaseEvidenceVerifier:
                 "release evidence omitted target, report, or audit metadata"
             )
         if evaluation.get("run_id") != eval_run_id or report.get("run_id") != eval_run_id:
-            raise ReleaseVerificationError("Hrz4 returned mismatched evaluation run IDs")
+            raise ReleaseVerificationError(
+                "model-quality-gate returned mismatched evaluation run IDs"
+            )
         if target.get("model") != card.name or target.get("prompt_version") != card.version:
-            raise ReleaseVerificationError("Hrz4 evidence targets a different agent release")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence targets a different agent release"
+            )
         if target.get("dataset_id") != self._policy.release_dataset_id:
-            raise ReleaseVerificationError("Hrz4 evidence used an unapproved release dataset")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence used an unapproved release dataset"
+            )
         if report.get("dataset_digest") != self._policy.release_dataset_digest:
-            raise ReleaseVerificationError("Hrz4 evidence has the wrong dataset digest")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence has the wrong dataset digest"
+            )
         if report.get("dataset_version") != self._policy.release_dataset_version:
-            raise ReleaseVerificationError("Hrz4 evidence used an unapproved dataset version")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence used an unapproved dataset version"
+            )
         if report.get("evaluator") != self._policy.release_evaluator:
-            raise ReleaseVerificationError("Hrz4 evidence used an unapproved evaluator")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence used an unapproved evaluator"
+            )
         if evaluation.get("threshold_policy_digest") != (
             self._policy.release_threshold_policy_digest
         ):
-            raise ReleaseVerificationError("Hrz4 evidence used an unapproved metric policy")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence used an unapproved metric policy"
+            )
         artifacts = report.get("artifact_refs")
         if not isinstance(artifacts, list) or any(
             not any(isinstance(ref, str) and ref.startswith(prefix) for ref in artifacts)
             for prefix in self._policy.release_artifact_prefixes
         ):
-            raise ReleaseVerificationError("Hrz4 evidence omitted required managed artifacts")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence omitted required managed artifacts"
+            )
         redteam = evaluation.get("redteam_report")
         if not isinstance(redteam, dict) or not isinstance(redteam.get("results"), list):
-            raise ReleaseVerificationError("Hrz4 evidence omitted red-team results")
+            raise ReleaseVerificationError("model-quality-gate evidence omitted red-team results")
         passed_categories = {
             item.get("case", {}).get("category")
             for item in redteam["results"]
@@ -156,17 +176,25 @@ class RemoteReleaseEvidenceVerifier:
             and item.get("passed") is True
         }
         if not set(self._policy.release_redteam_categories).issubset(passed_categories):
-            raise ReleaseVerificationError("Hrz4 evidence missed required red-team categories")
+            raise ReleaseVerificationError(
+                "model-quality-gate evidence missed required red-team categories"
+            )
         if evaluation.get("requires_human_review") is not False:
-            raise ReleaseVerificationError("Hrz4 gate still requires unresolved human review")
+            raise ReleaseVerificationError(
+                "model-quality-gate still requires unresolved human review"
+            )
         if evaluation.get("passed") is not True or report.get("attested") is not True:
-            raise ReleaseVerificationError("Hrz4 did not attest a passing promotion gate")
+            raise ReleaseVerificationError(
+                "model-quality-gate did not attest a passing promotion gate"
+            )
         if (
             audit.get("event_id") != audit_event_id
             or audit.get("action") != "release-approved"
             or audit.get("decision") != "allowed"
         ):
-            raise ReleaseVerificationError("Hrz5 event is not the requested release approval")
+            raise ReleaseVerificationError(
+                "agent-observability event is not the requested release approval"
+            )
         expected_metadata = {
             "agent_name": card.name,
             "agent_version": card.version,
@@ -174,13 +202,17 @@ class RemoteReleaseEvidenceVerifier:
             "approval_policy_version": self._policy.release_policy_version,
         }
         if any(metadata.get(key) != value for key, value in expected_metadata.items()):
-            raise ReleaseVerificationError("Hrz5 approval does not bind this agent and evaluation")
+            raise ReleaseVerificationError(
+                "agent-observability approval does not bind this agent and evaluation"
+            )
         approved_by = audit.get("actor")
         released_at = audit.get("timestamp")
         if not isinstance(approved_by, str) or not approved_by.strip():
-            raise ReleaseVerificationError("Hrz5 approval has no authenticated actor")
+            raise ReleaseVerificationError(
+                "agent-observability approval has no authenticated actor"
+            )
         if not isinstance(released_at, str) or not released_at.strip():
-            raise ReleaseVerificationError("Hrz5 approval has no timestamp")
+            raise ReleaseVerificationError("agent-observability approval has no timestamp")
         return ReleaseEvidence(
             eval_run_id=eval_run_id,
             eval_status="passed",

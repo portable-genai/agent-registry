@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the real Hrz3 walkthrough unattended and assert its live transcript."""
+"""Run the real agent-registry walkthrough unattended and assert its live transcript."""
 
 from __future__ import annotations
 
@@ -108,7 +108,9 @@ def main() -> int:
         evidence: dict[str, Any] = json.loads(artifact.read_text(encoding="utf-8"))
 
     validate_evidence(evidence)
-    print("PASS Hrz3 demo self-test: live registry transcript matches all narrated outcomes")
+    print(
+        "PASS agent-registry demo self-test: live registry transcript matches all narrated outcomes"
+    )
     return 0
 
 

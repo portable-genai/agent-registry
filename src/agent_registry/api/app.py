@@ -273,14 +273,14 @@ def _capability_manifest(settings: Settings) -> CapabilityManifestModel:
                 if managed and settings.registry.observability_url
                 else "unavailable"
             ),
-            provider="Hrz5",
+            provider="agent-observability",
             reason=(
                 "managed audit service intentionally absent from the laptop profile"
                 if demo_only
                 else (
                     ""
                     if managed and settings.registry.observability_url and refs["audit-linkage"]
-                    else "Hrz5 URL or audit-linkage attestation is missing"
+                    else "agent-observability URL or audit-linkage attestation is missing"
                 )
             ),
             required_for_production=True,
@@ -357,7 +357,9 @@ def release_agent(
     registry: RegistryDep,
     verifier: ReleaseVerifierDep,
 ) -> dict[str, Any]:
-    """Activate a draft only with an attested Hrz4 run and Hrz5 audit linkage."""
+    """Activate a draft only with an attested model-quality-gate run and agent-observability
+    linkage.
+    """
     card = registry.get(name)
     if card is None:
         raise HTTPException(

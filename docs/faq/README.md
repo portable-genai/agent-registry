@@ -1,4 +1,4 @@
-# Hrz3 FAQs
+# `agent-registry` FAQs
 
 - [Security](security.md)
 - [Portability](portability.md)

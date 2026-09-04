@@ -100,7 +100,9 @@ class AgentCardModel(BaseModel):
 
 
 class ReleaseRequestModel(BaseModel):
-    """Immutable IDs that the server resolves against trusted Hrz4/Hrz5 evidence."""
+    """Immutable IDs that the server resolves against trusted model-quality-gate,
+    agent-observability evidence.
+    """
 
     eval_run_id: str = Field(min_length=1)
     audit_event_id: str = Field(min_length=1)

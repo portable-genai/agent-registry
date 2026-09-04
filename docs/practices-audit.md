@@ -1,14 +1,14 @@
 # Common-base practices audit
 
 - **Repo:** `agent-registry`
-- **Catalog id:** Hrz3 (package `agent_registry`, env prefix `AGENT_REGISTRY`)
+- **Catalog id:** `agent-registry` (package `agent_registry`, env prefix `AGENT_REGISTRY`)
 - **Catalogue reference:** [`common-base-practices.md`](https://github.com/portable-genai/.github/blob/main/common-base-practices.md) (checks A1..G7)
 - **Authoritative source:** reconciled locally; the maintainer's
   cross-repository audit matrix is updated separately.
 - **Note:** Each check was re-run against the CURRENT tree, with this repo's package (`agent_registry`)
   and env prefix (`AGENT_REGISTRY`) substituted into the catalogue's commands.
 
-**This repo is a HORIZONTAL (Hrz3), a control-plane agent registry / governance catalog.** It does no
+**This repo is a HORIZONTAL (`agent-registry`), a control-plane agent registry / governance catalog.** It does no
 grounded LLM reasoning: it is a governed CRUD store of A2A/MCP AgentCards. Applicability is judged
 honestly on that basis:
 
@@ -17,7 +17,7 @@ honestly on that basis:
 - `[ui]` checks (C6, C8) are **N-A**: there is no `ui/`; the only surfaces are a REST API and a CLI.
 - `[infra]` checks (D4, D5) apply: the repo ships `infra/terraform/`.
 - The `platform` delegate profile is intentionally absent: this repo IS the platform service that a
-  vertical's `RemoteRegistryAdapter` (Rsk1) delegates to, so there is no sibling to delegate to.
+  vertical's `RemoteRegistryAdapter` (`compliance-advisory`) delegates to, so there is no sibling to delegate to.
 
 **Load-bearing** checks (a FAIL breaks a shared catalog guarantee) are A1-A6, C1-C5, D1-D3 and E1.
 Summary: A1-A6 all PASS; C1 PASS, C2/C3/C4 N-A by design, C5 PASS; D1-D3 PASS; E1 N-A
@@ -35,7 +35,7 @@ load-bearing FAIL remains.
 | **A5** Lazy cloud imports in cloud adapters `[all]` **(load-bearing)** | PASS | `grep -n "^from google\|^import google\|^from sqlalchemy" adapters/gcp/*.py` returns nothing; `test_gcp_adapter_modules_import_without_google_sdks` + `test_gcp_adapters_construct_cleanly_without_sdks` prove it. The local adapter's Firestore-emulator import is lazy, on its branch only. |
 | **A6** Contract tests enforce the hexagon; port map cannot drift `[all]` **(load-bearing)** | PASS | `test_contract.py` enforces runtime-checkable, single-settings construction, structural Protocol conformance, exact port/profile set equality and unknown-selector rejection. |
 | **A7** Kernel vs vertical split in the domain `[all]` | N-A | By design: the domain is a single ~92-line `models.py` (AgentCard/AgentSkill/Ownership/Lifecycle). A single-purpose control-plane service has no vertical to fork from a kernel, so the split does not apply. |
-| **A8** Consume platform horizontals via thin delegates `[all]` | N-A | By design: Hrz3 is a foundational (P0) horizontal. It defines a contract that others consume (Rsk1), consumes no sibling horizontal at runtime, and re-implements none. No second implementation of any horizontal's core exists. |
+| **A8** Consume platform horizontals via thin delegates `[all]` | N-A | By design: `agent-registry` is a foundational (P0) horizontal. It defines a contract that others consume (`compliance-advisory`), consumes no sibling horizontal at runtime, and re-implements none. No second implementation of any horizontal's core exists. |
 | **B1** Consequential math is deterministic, pure, replayable `[agentic]` | N-A | Registry does no LLM reasoning and computes no scores; persistence is a deterministic idempotent upsert. No numeric decision to make pure. |
 | **B2** Every claim carries a citation; empty retrieval is a hard error `[agentic]` | N-A | No generated claims and no retrieval-then-cite path: the service stores and returns AgentCards verbatim. |
 | **B3** Maker-checker on every consequential output `[agentic]` | N-A | No generated output to review. (Governance analog exists: `Lifecycle` gating, `AgentCard.discoverable` = active/deprecated only, per COMPLIANCE P-06, but this is not the agentic maker-checker the check describes.) |
@@ -49,14 +49,14 @@ load-bearing FAIL remains.
 | **C6** Security-header baseline on every surface `[ui]` | N-A | No web UI. The REST API has no CSP/nosniff/Referrer-Policy/HSTS middleware; as an internal S2S JSON API this is a minor hardening opportunity, not a browser surface. |
 | **C7** S2S calls authenticated, fail-closed `[all]` | PASS | `require_service_caller` is the shared `hex_service_kit.web.make_require_service_caller`, same env names (`AGENT_REGISTRY_S2S_*`) and profile rule (secure = gcp/secure), with the profile still resolved through `deps.get_settings` so test-app dependency overrides hold. Guards every catalog CRUD and per-agent resolution route; `/healthz` + the registry's own public card stay open. Covered by `test_s2s_auth.py`. |
 | **C8** Web login flow hardening `[ui]` | N-A | The repo owns no browser login flow (no UI, S2S only). |
-| **C9** Tamper-evident audit with honest limits `[all]` | N-A | By design: the registry owns no audit store. Cross-service audit / WORM logging is delegated to Hrz5 (`agent-observability`), per COMPLIANCE P-07 and the consume-the-horizontal rule (A8). The managed store is CMEK-encrypted and the write path is an idempotent owner-stamped upsert. |
+| **C9** Tamper-evident audit with honest limits `[all]` | N-A | By design: the registry owns no audit store. Cross-service audit / WORM logging is delegated to `agent-observability`, per COMPLIANCE P-07 and the consume-the-horizontal rule (A8). The managed store is CMEK-encrypted and the write path is an idempotent owner-stamped upsert. |
 | **C10** No secret values in the repo `[all]` | PASS | `config/settings.yaml` stores only `${ENV:-default}` names (e.g. `AGENT_REGISTRY_KMS_KEY`); `api/security.py` reads `AGENT_REGISTRY_S2S_TOKEN` at request time and never logs it; `.env.example` has placeholders only. |
 | **D1** Locked, reproducible installs everywhere `[all]` **(load-bearing)** | PASS | Committed `requirements-dev.lock` + `requirements-gcp.lock`, both regenerated only through `make lock` -> `scripts/lock.py` (`uv pip compile --universal`), which re-applies the `tag = commit` header a bare compile destroys. `pyproject.toml` names the reviewable release TAG and each lock pins the 40-character COMMIT it resolves to, with the header mapping the two; `tests/unit/test_repo_artifacts.py` asserts the three-way agreement offline, asks a local object store whether each pinned sha is a commit rather than an annotated tag object, and fails if a lockfile ever escapes `make lock`. Read the pin out of the lockfiles rather than a number written here. `ruff==0.16.3` is exact; the Dockerfile installs from the runtime lock. **Observed failing first:** the locks previously carried uv's own two-line provenance comment and no map, so nothing recorded that the pinned `20ba3bece41c069a135151b9630d02dc1c69169f` was `hex-service-kit@v0.0.5` — `org-metadata/scripts/prove-installed-pins.py` had no `HEADER_TAG` line to read and `fleet-deps.py` had no `scripts/lock.py` to restore a header through, so this repo was skipped by both. |
 | **D2** Digest-pinned images, SHA-pinned Actions, dependabot, CI audit `[all]` **(load-bearing)** | PASS | Base image digest-pinned, Actions SHA-pinned, `.github/dependabot.yml` present, `pip-audit` a hard CI gate. |
 | **D3** Whole gate runs offline, zero org secrets `[all]` **(load-bearing)** | PASS | the hosted GitHub Actions check sets `AGENT_REGISTRY_PROFILE: local`, installs `.[dev]` only (no `[gcp]` extra), and runs ruff + mypy + pytest + `eval/run_eval.py` with no `secrets.` references. |
 | **D4** Non-root, minimal, healthchecked container `[infra]` | PASS | Genuinely two-stage (`builder` installs into `/opt/venv` with git; `runtime` copies only that venv, so no git/compiler ships), dedicated non-root uid/gid 10001, `EXPOSE 8083`, `HEALTHCHECK` probing `/healthz` over loopback with the interpreter already present, and `AGENT_REGISTRY_PROFILE=gcp` set in the image so a shipped container cannot silently fall back to the no-auth SQLite profile. Both `FROM` lines stay digest-pinned. Asserted by `tests/test_container_image_contract.py` (6 tests). |
 | **D5** Deploy-time residency/sovereignty, parameterised `[infra]` | PARTIAL (posture-as-code complete; live enforcement unproved) | The whole offline half is in place: one `allowed_regions` allowlist enforced at `terraform plan` (variable validation), by Org Policy `gcp.resourceLocations` derived from the same variable (`infra/terraform/org_policy.tf`), and at application load, where a region outside it raises `ResidencyError` (`src/agent_registry/config.py`, `tests/test_residency.py`). Also added: `iam.disableServiceAccountKeyCreation` enforced, a VPC-SC perimeter created DRY RUN FIRST with `use_explicit_dry_run_spec` and enforcement behind the `vpc_sc_enforce` opt-in defaulting false (`infra/terraform/vpc_sc.tf`), a CMEK-encrypted WORM log bucket with LOCKED retention plus the audit sink (`infra/terraform/logging.tf`), log-based posture alerts on dry-run and residency denials, per-service CMEK bindings including the storage service agent, and a credential-free `terraform fmt -check` + `init -backend=false` + `validate` job in CI. Asserted by `tests/test_terraform_security_contract.py` (6 tests) and `tests/test_residency.py` (5 tests); `terraform validate` passes locally. **Still PARTIAL, honestly:** everything above is posture-as-code. Proof that the Org Policy is applied to a named project, that the perimeter was promoted out of dry run, and that a real bucket carries a locked retention policy requires a production deployment that does not exist yet, and the hosted CI job cannot run while no hosted CI existed until GitHub Actions became the fleet's gate on 2026-09-02. |
-| **E1** Offline eval smoke guards merge; Hrz4 owns promotion `[agentic]` **(load-bearing)** | N-A | The agentic framing (Hrz4 promotion authority, `EvaluationGatePort`, golden LLM dataset) does not apply to a registry. The load-bearing substance IS met: `eval/run_eval.py` is a deterministic offline gate over a fictional golden card set scoring catalog-correctness invariants (`upsert_idempotency`, `roundtrip_fidelity`, `resolve_accuracy`, `governance_preserved`), run by CI on every PR and exiting non-zero on failure. |
+| **E1** Offline eval smoke guards merge; `model-quality-gate` owns promotion `[agentic]` **(load-bearing)** | N-A | The agentic framing (`model-quality-gate` promotion authority, `EvaluationGatePort`, golden LLM dataset) does not apply to a registry. The load-bearing substance IS met: `eval/run_eval.py` is a deterministic offline gate over a fictional golden card set scoring catalog-correctness invariants (`upsert_idempotency`, `roundtrip_fidelity`, `resolve_accuracy`, `governance_preserved`), run by CI on every PR and exiting non-zero on failure. |
 | **E2** Safety metric with strictest threshold, no false green `[agentic]` | N-A | No LLM output and no PII, so there is no safety/`pii_safety` metric. The correctness invariants are held at `1.00`, structurally unable to pass on a broken store. |
 | **E3** Fixtures and golden data obviously fictional `[all]` | PASS | The eval golden set and the demo gallery use unmistakably synthetic names/URLs (`compliance-advisory`, `guardrail-gateway`, `fx-rate-helper (UNOWNED)`, `*.asia-southeast1.example`) and are labelled FICTIONAL in `scripts/registry_demo.py`. |
 | **F1** Demo is code, offline, one command, presenter-paced `[all]` | PASS | `make demo` -> `scripts/registry_demo.py` drives the REAL `SqliteRegistryAdapter` through the CLI + an in-process FastAPI `TestClient` on the `local` profile (no cloud, no API key). Presenter-paced (waits for Enter; `DEMO_AUTO=1` self-runs); narrates on the console. |
@@ -66,7 +66,7 @@ load-bearing FAIL remains.
 | **G2** Compliance mapping table + adopter-owned crosswalk `[all]` | PASS | `COMPLIANCE.md` section C adds a regulator crosswalk (MAS TRM, outsourcing/cloud advisory, Notice 644, FEAT, model risk) mapped to the internal principle, the control here and an openable artefact. The section states plainly that it is owned by the adopting institution, that upstream ships it as a filled-in template, and that it asserts no compliance: live enforcement evidence follows deployment. P-01 and R2 were rewritten to cite the new residency controls. `tests/test_doc_authority.py::test_compliance_mapping_cites_files_that_exist` proves every cited path exists; `::test_regulator_crosswalk_is_present_and_adopter_owned` proves the ownership and no-overstatement statements are present. |
 | **G3** Documented, mechanised fork path `[all]` | PASS | `docs/ADOPTING.md` compares consume/fork/implement-port modes, names stable versus adopter-owned files and documents upstream/exit gates. `scripts/rename_fork.py` previews by default and preflights destination collision before writes; tests cover both rename content and collision safety. |
 | **G4** Retired `[all]` | N-A (retired) | Retired practice. Releases are tracked by git tag and the `pyproject.toml` version. |
-| **G5** Role-specific FAQs referencing sibling systems `[all]` | PASS | `docs/faq/` contains security, portability, features, adoption and compliance guides and keeps safety with Hrz1, knowledge with Hrz2, promotion with Hrz4, audit with Hrz5 and review with Hrz7. |
+| **G5** Role-specific FAQs referencing sibling systems `[all]` | PASS | `docs/faq/` contains security, portability, features, adoption and compliance guides and keeps safety with `agent-guardrail-gateway`, knowledge with `enterprise-knowledge-base`, promotion with `model-quality-gate`, audit with `agent-observability` and review with `human-review-console`. |
 | **G6** Contribution docs cover full extension touch list `[all]` | PASS | `CONTRIBUTING.md` documents setup, the seven-step gate, the hexagon rules, the adding-a-port touch list and the commons-first rule; `test_contract.py` enforces the binding contract. |
 | **G7** Markdown discipline: minimise em-dashes, validate mermaid `[all]` | PASS | An em-dash search returns 0 hits across README, SPEC, ARCHITECTURE, COMPLIANCE and DEMO; the mermaid blocks (`ARCHITECTURE.md` flowchart + sequenceDiagram, README graph) use standard syntax. |
 
@@ -80,7 +80,7 @@ this repo cannot produce.
 
 ## Gaps carried to systems/
 
-Tracked against the Hrz3 row of
+Tracked against the `agent-registry` row of
 the maintainer's per-system register under
 `Capability gaps`. Open items only.
 
@@ -95,5 +95,5 @@ the maintainer's per-system register under
 Mandated docs `docs/runbook.md` and `docs/onprem-migration.md` are present.
 
 The `[agentic]` checks (B1-B3, C3-C4, E1-E2) and C2/C9 are **N-A by design** for a control-plane
-registry (no grounded LLM, no user content/PII, no per-tenant resource data, audit delegated to Hrz5);
+registry (no grounded LLM, no user content/PII, no per-tenant resource data, audit delegated to `agent-observability`);
 they are not gaps.

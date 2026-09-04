@@ -1,4 +1,4 @@
-# Architecture: Hrz3 Agent Registry & Governance
+# Architecture: `agent-registry`
 
 This document goes deeper than the [README](README.md): the port to adapter table across the
 three deployment profiles, the request flow as a sequence diagram, and how the `local`
@@ -11,7 +11,7 @@ pieces fit together; it does not redefine them.
 
 ## 1. Hexagonal overview
 
-Hrz3 is a **ports-and-adapters** (hexagonal) application. The HTTP app, the CLI and the
+`agent-registry` is a **ports-and-adapters** (hexagonal) application. The HTTP app, the CLI and the
 container above the adapter layer never change between profiles. Everything the service needs
 from a store is expressed as a `typing.Protocol` **port**; concrete **adapters** are bound to
 the port by dotted path in [`config/settings.yaml`](config/settings.yaml) and instantiated

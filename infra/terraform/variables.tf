@@ -77,7 +77,7 @@ variable "caller_service_accounts" {
 
 variable "quality_service_url" {
   type        = string
-  description = "HTTPS base URL of the Hrz4 AI Quality service."
+  description = "HTTPS base URL of the model-quality-gate AI Quality service."
 
   validation {
     condition     = startswith(var.quality_service_url, "https://")
@@ -87,7 +87,7 @@ variable "quality_service_url" {
 
 variable "observability_service_url" {
   type        = string
-  description = "HTTPS base URL of the Hrz5 Observability service."
+  description = "HTTPS base URL of the agent-observability service."
 
   validation {
     condition     = startswith(var.observability_service_url, "https://")
@@ -98,25 +98,25 @@ variable "observability_service_url" {
 variable "quality_service_project_id" {
   type        = string
   default     = ""
-  description = "Project hosting Hrz4; empty means project_id."
+  description = "Project hosting model-quality-gate; empty means project_id."
 }
 
 variable "quality_service_name" {
   type        = string
   default     = "model-quality-gate"
-  description = "Cloud Run service name for Hrz4."
+  description = "Cloud Run service name for model-quality-gate."
 }
 
 variable "observability_service_project_id" {
   type        = string
   default     = ""
-  description = "Project hosting Hrz5; empty means project_id."
+  description = "Project hosting agent-observability; empty means project_id."
 }
 
 variable "observability_service_name" {
   type        = string
   default     = "agent-observability"
-  description = "Cloud Run service name for Hrz5."
+  description = "Cloud Run service name for agent-observability."
 }
 
 variable "release_policy_version" {
@@ -126,7 +126,7 @@ variable "release_policy_version" {
 
 variable "release_dataset_id" {
   type        = string
-  description = "Approved Hrz4 golden dataset ID for registry releases."
+  description = "Approved model-quality-gate golden dataset ID for registry releases."
 }
 
 variable "release_dataset_version" {

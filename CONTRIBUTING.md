@@ -1,4 +1,4 @@
-# Contributing to Hrz3 Agent Registry
+# Contributing to `agent-registry`
 
 Thanks for your interest. This is an engineering-portfolio reference repo; the bar is that
 every change keeps the offline gate green and respects the hexagonal boundaries.
@@ -27,7 +27,7 @@ make portability-demo           # bounded profile and exit proof
 
 All seven must pass. The eval gate scores deterministic registry invariants
 (`upsert_idempotency` / `roundtrip_fidelity` / `resolve_accuracy` / `governance_preserved`);
-there is no LLM and no Hrz4 promotion split, by design.
+there is no LLM and no `model-quality-gate` promotion split, by design.
 
 ## Architecture rules (hexagon)
 
