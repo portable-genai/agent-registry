@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_service" "registry" {
 
   # Encrypt the revision with the regional CMEK key.
   template {
-    encryption_key                   = google_kms_crypto_key.registry.id
+    encryption_key                   = one(google_kms_crypto_key.registry[*].id)
     service_account                  = google_service_account.runtime.email
     max_instance_request_concurrency = 80
 
@@ -75,7 +75,7 @@ resource "google_cloud_run_v2_service" "registry" {
       }
       env {
         name  = "AGENT_REGISTRY_KMS_KEY"
-        value = google_kms_crypto_key.registry.id
+        value = one(google_kms_crypto_key.registry[*].id)
       }
       env {
         name  = "AGENT_REGISTRY_PUBLIC_URL"

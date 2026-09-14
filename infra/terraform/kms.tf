@@ -3,6 +3,7 @@
 # residency; a global/multi-region key would not.
 
 resource "google_kms_key_ring" "registry" {
+  count    = var.cmek_enabled ? 1 : 0
   name     = local.kms_keyring
   location = local.region
   project  = var.project_id
@@ -11,8 +12,9 @@ resource "google_kms_key_ring" "registry" {
 }
 
 resource "google_kms_crypto_key" "registry" {
+  count           = var.cmek_enabled ? 1 : 0
   name            = local.kms_key_name
-  key_ring        = google_kms_key_ring.registry.id
+  key_ring        = one(google_kms_key_ring.registry[*].id)
   rotation_period = "7776000s" # 90 days
 
   purpose = "ENCRYPT_DECRYPT"
@@ -30,15 +32,16 @@ data "google_project" "this" {
 
 # AlloyDB service agent (only when AlloyDB is the backend).
 resource "google_kms_crypto_key_iam_member" "alloydb" {
-  count         = local.use_alloydb ? 1 : 0
-  crypto_key_id = google_kms_crypto_key.registry.id
+  count         = var.cmek_enabled && (local.use_alloydb) ? 1 : 0
+  crypto_key_id = one(google_kms_crypto_key.registry[*].id)
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.this.number}@gcp-sa-alloydb.iam.gserviceaccount.com"
 }
 
 # Cloud Run service agent (encrypts the revision with CMEK).
 resource "google_kms_crypto_key_iam_member" "run" {
-  crypto_key_id = google_kms_crypto_key.registry.id
+  count         = var.cmek_enabled ? 1 : 0
+  crypto_key_id = one(google_kms_crypto_key.registry[*].id)
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.this.number}@serverless-robot-prod.iam.gserviceaccount.com"
 }
