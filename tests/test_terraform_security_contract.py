@@ -53,7 +53,7 @@ def test_worm_log_bucket_has_locked_retention_and_cmek() -> None:
 
     assert "retention_policy {" in logging_tf
     assert "is_locked        = var.log_bucket_locked" in logging_tf
-    assert "default_kms_key_name = google_kms_crypto_key.registry.id" in logging_tf
+    assert "default_kms_key_name = one(google_kms_crypto_key.registry[*].id)" in logging_tf
     assert "google_logging_project_sink" in logging_tf
     assert "unique_writer_identity = true" in logging_tf
     assert "var.log_retention_days >= 365" in variables
@@ -79,7 +79,9 @@ def test_cmek_is_bound_per_service_not_project_wide() -> None:
     assert "gcp-sa-alloydb.iam.gserviceaccount.com" in kms
     assert "serverless-robot-prod.iam.gserviceaccount.com" in kms
     assert "gs-project-accounts.iam.gserviceaccount.com" in logging_tf
-    assert "encryption_key                   = google_kms_crypto_key.registry.id" in cloud_run
+    assert (
+        "encryption_key                   = one(google_kms_crypto_key.registry[*].id)" in cloud_run
+    )
 
 
 def test_region_and_allowlist_reach_the_runtime_as_configuration() -> None:

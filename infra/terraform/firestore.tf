@@ -9,8 +9,11 @@ resource "google_firestore_database" "registry" {
   type        = "FIRESTORE_NATIVE"
 
   # Regional CMEK for residency.
-  cmek_config {
-    kms_key_name = google_kms_crypto_key.registry.id
+  dynamic "cmek_config" {
+    for_each = var.cmek_enabled ? [1] : []
+    content {
+      kms_key_name = one(google_kms_crypto_key.registry[*].id)
+    }
   }
 
   # Guardrails so the catalog database is not deleted by accident.

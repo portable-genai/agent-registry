@@ -25,8 +25,11 @@ resource "google_storage_bucket" "audit_logs" {
     enabled = true
   }
 
-  encryption {
-    default_kms_key_name = google_kms_crypto_key.registry.id
+  dynamic "encryption" {
+    for_each = var.cmek_enabled ? [1] : []
+    content {
+      default_kms_key_name = one(google_kms_crypto_key.registry[*].id)
+    }
   }
 
   depends_on = [
@@ -37,7 +40,8 @@ resource "google_storage_bucket" "audit_logs" {
 
 # The Cloud Storage service agent must be able to use the regional CMEK key.
 resource "google_kms_crypto_key_iam_member" "storage" {
-  crypto_key_id = google_kms_crypto_key.registry.id
+  count         = var.cmek_enabled ? 1 : 0
+  crypto_key_id = one(google_kms_crypto_key.registry[*].id)
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.this.number}@gs-project-accounts.iam.gserviceaccount.com"
 }

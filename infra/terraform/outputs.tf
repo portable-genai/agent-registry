@@ -20,7 +20,7 @@ output "cloud_run_service_uri" {
 
 output "cmek_key" {
   description = "Regional CMEK key protecting the catalog store and Cloud Run revision."
-  value       = google_kms_crypto_key.registry.id
+  value       = one(google_kms_crypto_key.registry[*].id)
 }
 
 output "backend" {

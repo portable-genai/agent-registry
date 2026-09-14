@@ -12,8 +12,11 @@ resource "google_alloydb_cluster" "registry" {
     network = google_compute_network.registry[0].id
   }
 
-  encryption_config {
-    kms_key_name = google_kms_crypto_key.registry.id
+  dynamic "encryption_config" {
+    for_each = var.cmek_enabled ? [1] : []
+    content {
+      kms_key_name = one(google_kms_crypto_key.registry[*].id)
+    }
   }
 
   dynamic "initial_user" {
