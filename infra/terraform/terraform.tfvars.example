@@ -32,5 +32,5 @@ allowed_member_domain_ids = [] # e.g. ["C01abcdef"] Cloud Identity customer ids
 access_policy_name        = "" # Access Context Manager policy id; empty = no perimeter here
 vpc_sc_enforce            = false # dry run first; flip only when the dry-run alert is quiet
 log_retention_days        = 400
-log_bucket_locked         = true
+worm_locked               = true
 notification_channels     = []

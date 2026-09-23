@@ -217,10 +217,9 @@ variable "log_retention_days" {
   }
 }
 
-variable "log_bucket_locked" {
+variable "worm_locked" {
   type        = bool
-  default     = true
-  description = "Lock the retention policy (WORM). Irreversible; false is for sandbox projects only."
+  description = "Lock the retention policy (WORM). Irreversible, so there is NO default: a plan refuses until the deployment states it. false is for sandbox projects only."
 }
 
 variable "notification_channels" {

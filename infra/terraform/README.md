@@ -52,7 +52,7 @@ terraform apply \
 | `vpc_sc_enforce` | `false` | Dry run first. Flip only after the dry-run alert is quiet. |
 | `vpc_sc_restricted_services` | AlloyDB, Firestore, Storage, KMS, Logging | Identical in the dry-run spec and in enforcement. |
 | `log_retention_days` | `400` | Locked WORM retention; the validation floor is 365. |
-| `log_bucket_locked` | `true` | Locking is irreversible; `false` is for sandbox projects only. |
+| `worm_locked` | none: must be stated | Locking is irreversible, so there is no default; `false` is for sandbox projects only. |
 | `allowed_member_domain_ids` | `[]` | Cloud Identity customer ids for domain-restricted sharing. |
 | `notification_channels` | `[]` | Monitoring channels for the posture alerts. |
 
@@ -75,7 +75,7 @@ terraform apply \
 - The VPC-SC perimeter starts in dry run. Watch the ``agent-registry`: VPC-SC dry-run violation`
   alert until it is silent, then set `vpc_sc_enforce = true`. The same service list is used in
   both modes, so enforcement cannot exceed what dry run rehearsed.
-- Locking the log bucket retention cannot be undone. Keep `log_bucket_locked = false` in
+- Locking the log bucket retention cannot be undone. Keep `worm_locked = false` in
   sandboxes and `true` everywhere a regulator would look.
 - `terraform fmt -check` and `terraform validate` run in CI with no cloud credentials
   (the hosted GitHub Actions check, job `terraform`). Applying this configuration against a real
