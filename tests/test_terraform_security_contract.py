@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 _TF = Path(__file__).parents[1] / "infra" / "terraform"
@@ -52,14 +53,16 @@ def test_worm_log_bucket_has_locked_retention_and_cmek() -> None:
     variables = (_TF / "variables.tf").read_text(encoding="utf-8")
 
     assert "retention_policy {" in logging_tf
-    assert "is_locked        = var.log_bucket_locked" in logging_tf
+    assert "is_locked        = var.worm_locked" in logging_tf
     assert "default_kms_key_name = one(google_kms_crypto_key.registry[*].id)" in logging_tf
     assert "google_logging_project_sink" in logging_tf
     assert "unique_writer_identity = true" in logging_tf
     assert "var.log_retention_days >= 365" in variables
 
-    locked_block = variables.split('variable "log_bucket_locked" {')[1].split("\n}")[0]
-    assert "default     = true" in locked_block
+    # An irreversible lock takes NO default (the fleet decision of 2026-09-12): a plan refuses
+    # until the deployment states it, rather than locking by silence.
+    locked_block = variables.split('variable "worm_locked" {')[1].split("\n}")[0]
+    assert not re.search(r"^\s*default\s*=", locked_block, re.M)
 
 
 def test_posture_alerts_watch_the_dry_run_and_residency_denials() -> None:

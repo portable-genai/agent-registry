@@ -18,7 +18,7 @@ resource "google_storage_bucket" "audit_logs" {
   # objects cannot be deleted or overwritten before it expires.
   retention_policy {
     retention_period = var.log_retention_days * 24 * 60 * 60
-    is_locked        = var.log_bucket_locked
+    is_locked        = var.worm_locked
   }
 
   versioning {
