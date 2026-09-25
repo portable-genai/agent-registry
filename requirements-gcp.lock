@@ -17,7 +17,7 @@
 #
 # tag -> commit, and `tests/unit/test_repo_artifacts.py` proves each line against the tag
 # `pyproject.toml` names and against the other lockfile:
-#   hex-service-kit  v0.0.8 = 2cf15351dc968d908697b89237d4b5b42b1870a4
+#   hex-service-kit  v0.0.9 = 77bd9ca2afbf1c6bca897f24d8a36908f85d55cd
 aiofiles==25.1.0
     # via google-cloud-alloydb-connector
 annotated-doc==0.0.5
@@ -48,37 +48,35 @@ cryptography==50.0.1
     #   google-cloud-alloydb-connector
 fastapi==0.141.1
     # via agent-registry (pyproject.toml)
-google-api-core==2.36.0
+google-api-core==2.39.0
     # via
     #   google-cloud-alloydb
     #   google-cloud-alloydb-connector
     #   google-cloud-core
     #   google-cloud-firestore
-google-auth==2.58.0
+google-auth==2.58.1
     # via
     #   google-api-core
     #   google-cloud-alloydb
     #   google-cloud-alloydb-connector
     #   google-cloud-core
     #   google-cloud-firestore
-google-cloud-alloydb==0.11.1
+google-cloud-alloydb==0.11.2
     # via google-cloud-alloydb-connector
 google-cloud-alloydb-connector==1.14.0
     # via agent-registry (pyproject.toml)
 google-cloud-core==2.7.0
     # via google-cloud-firestore
-google-cloud-firestore==2.30.0
+google-cloud-firestore==2.32.0
     # via agent-registry (pyproject.toml)
-googleapis-common-protos==1.75.3
+googleapis-common-protos==1.75.4
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-greenlet==3.5.5 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
-    # via sqlalchemy
 grpc-google-iam-v1==0.14.5
     # via google-cloud-alloydb
-grpcio==1.83.1
+grpcio==1.84.0
     # via
     #   google-api-core
     #   google-cloud-alloydb
@@ -86,13 +84,13 @@ grpcio==1.83.1
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
-grpcio-status==1.83.1
+grpcio-status==1.84.0
     # via google-api-core
 h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-hex-service-kit @ git+https://github.com/portable-genai/hex-service-kit@2cf15351dc968d908697b89237d4b5b42b1870a4
+hex-service-kit @ git+https://github.com/portable-genai/hex-service-kit@77bd9ca2afbf1c6bca897f24d8a36908f85d55cd
     # via agent-registry (pyproject.toml)
 httpcore==1.0.9
     # via httpx
@@ -100,12 +98,12 @@ httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
     # via agent-registry (pyproject.toml)
-idna==3.19
+idna==3.20
     # via
     #   anyio
     #   httpx
     #   requests
-opentelemetry-api==1.44.0
+opentelemetry-api==1.45.0
     # via google-api-core
 pg8000==1.31.5
     # via google-cloud-alloydb-connector
@@ -114,7 +112,7 @@ proto-plus==1.28.4
     #   google-api-core
     #   google-cloud-alloydb
     #   google-cloud-firestore
-protobuf==7.36.1
+protobuf==7.36.2
     # via
     #   google-api-core
     #   google-cloud-alloydb
@@ -152,9 +150,9 @@ scramp==1.4.17
     # via pg8000
 six==1.17.0
     # via python-dateutil
-sqlalchemy==2.0.52
+sqlalchemy==2.1.0
     # via agent-registry (pyproject.toml)
-starlette==1.6.0
+starlette==1.7.0
     # via fastapi
 typing-extensions==4.16.0
     # via
@@ -171,13 +169,13 @@ typing-inspection==0.4.4
     # via
     #   fastapi
     #   pydantic
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
-uvicorn==0.52.4
+uvicorn==0.54.0
     # via agent-registry (pyproject.toml)
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
-watchfiles==1.2.0
+watchfiles==1.3.0
     # via uvicorn
 websockets==17.1
     # via uvicorn
