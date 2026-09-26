@@ -54,6 +54,18 @@ _PROFILE_ENV = "AGENT_REGISTRY_PROFILE"
 #: case-sensitive, so ``Local`` is a typo that refuses rather than a silent choice.
 RUNTIME_PROFILES = frozenset({"gcp", "local", "onprem"})
 
+#: The ``gcp`` profile's ``backend`` (Terraform's ``var.backend``, surfaced here as
+#: ``AGENT_REGISTRY_BACKEND``) names the ONE managed store Terraform provisioned; this is the
+#: single place that maps it to the adapter that actually talks to that store.
+#: :meth:`Settings.from_dict` uses it to OVERWRITE every port's ``gcp`` binding at load time, so
+#: the imported adapter can never drift from the provisioned store the way a hand-maintained
+#: ``adapters.gcp`` string in ``settings.yaml`` could (a deployment naming ``firestore`` here
+#: while a stale string still imported the AlloyDB adapter).
+GCP_BACKEND_ADAPTERS: dict[str, str] = {
+    "alloydb": "agent_registry.adapters.gcp.alloydb_registry:AlloyDBRegistryAdapter",
+    "firestore": "agent_registry.adapters.gcp.firestore_registry:FirestoreRegistryAdapter",
+}
+
 #: The profile string handed to every posture RELAXATION when no profile was ever named. It is
 #: deliberately NOT a member of :data:`RUNTIME_PROFILES` and never reaches a
 #: :class:`~agent_registry.container.Container` binding: it exists so that "no choice was
@@ -68,6 +80,10 @@ class ResidencyError(ValueError):
 
 class ProfileError(ValueError):
     """Raised when a named profile is one nothing binds, including a capitalisation typo."""
+
+
+class BackendError(ValueError):
+    """Raised when ``backend`` (``AGENT_REGISTRY_BACKEND``) names no shipped managed adapter."""
 
 
 def _validate_profile(profile: str) -> str:
@@ -240,6 +256,23 @@ class LocalSettings:
     db_path: str = ""  # SQLite catalog; "" => ~/.agent_registry/local.db
 
 
+def _bind_gcp_backend(
+    adapters: dict[str, dict[str, str]], backend: str
+) -> dict[str, dict[str, str]]:
+    """Overwrite every port's ``gcp`` binding with the adapter :data:`GCP_BACKEND_ADAPTERS`
+    names for ``backend``, so the class the container imports for the gcp profile is always the
+    one that talks to the store Terraform actually provisioned. A port with no ``gcp`` entry is
+    left alone; an unbound ``backend`` fails ``from_dict`` before this is ever called.
+    """
+    resolved: dict[str, dict[str, str]] = {}
+    for port, bindings in adapters.items():
+        bindings = dict(bindings)
+        if "gcp" in bindings:
+            bindings["gcp"] = GCP_BACKEND_ADAPTERS[backend]
+        resolved[port] = bindings
+    return resolved
+
+
 @dataclass(frozen=True, slots=True)
 class Settings:
     """Top-level configuration for the registry service."""
@@ -250,8 +283,10 @@ class Settings:
     # refuses a region outside it (fail fast at process start, not at first write).
     allowed_regions: tuple[str, ...] = DEFAULT_ALLOWED_REGIONS
     profile: str = "local"  # gcp | local | onprem
-    # Which managed store the gcp profile uses. Documentation/Terraform value only;
-    # the actual adapter is chosen by the dotted binding under ``adapters:``.
+    # Which managed store the gcp profile uses (Terraform's var.backend, surfaced as
+    # AGENT_REGISTRY_BACKEND). ``from_dict`` uses this to CHOOSE the gcp adapter binding
+    # (see :data:`GCP_BACKEND_ADAPTERS`), so a deployment's provisioned store and the class it
+    # imports cannot drift apart the way two independently hand-edited settings could.
     backend: str = "alloydb"  # alloydb | firestore
     kms_key: str = ""  # regional Cloud KMS key for CMEK (empty under local)
     registry: RegistrySettings = field(default_factory=RegistrySettings)
@@ -304,13 +339,19 @@ class Settings:
                 f"{list(allowed_regions)}; set allowed_regions (AGENT_REGISTRY_ALLOWED_REGIONS) "
                 "to the approved regions before deploying there."
             )
+        backend = str(raw.get("backend", "alloydb"))
+        if backend not in GCP_BACKEND_ADAPTERS:
+            raise BackendError(
+                f"unknown backend {backend!r} (AGENT_REGISTRY_BACKEND); expected one of "
+                f"{sorted(GCP_BACKEND_ADAPTERS)}"
+            )
         return cls(
             project_id=str(raw.get("project_id", "your-gcp-project")),
             region=region,
             allowed_regions=allowed_regions,
             profile=choice.profile,
             profile_explicit=choice.explicit,
-            backend=str(raw.get("backend", "alloydb")),
+            backend=backend,
             kms_key=str(raw.get("kms_key", "")),
             registry=RegistrySettings(
                 name=str(reg.get("name", "agent-registry")),
@@ -347,5 +388,5 @@ class Settings:
                 collection=str(fs.get("collection", "agent_cards")),
             ),
             local=LocalSettings(db_path=str(loc.get("db_path", ""))),
-            adapters=raw.get("adapters", {}) or {},
+            adapters=_bind_gcp_backend(raw.get("adapters", {}) or {}, backend),
         )

@@ -19,7 +19,11 @@ region: ${GCP_REGION:-asia-southeast1}         # selected at deploy; must match 
 # a region outside it fails at process start, exactly as terraform plan fails.
 allowed_regions: ${AGENT_REGISTRY_ALLOWED_REGIONS:-asia-southeast1}
 profile: ${AGENT_REGISTRY_PROFILE:-}         # gcp | local | onprem; unset = nobody chose
-backend: ${AGENT_REGISTRY_BACKEND:-alloydb}  # alloydb | firestore (gcp profile only)
+# alloydb | firestore (gcp profile only). Mirrors the Terraform variable of the same name and
+# CHOOSES the gcp adapter class (config.GCP_BACKEND_ADAPTERS overwrites the `gcp` entry under
+# `adapters:` below at load time), so the imported adapter always matches the store Terraform
+# provisioned; the `adapters.*.gcp` string below is never read for this decision.
+backend: ${AGENT_REGISTRY_BACKEND:-alloydb}
 kms_key: ${AGENT_REGISTRY_KMS_KEY:-}         # regional Cloud KMS key for CMEK
 
 registry:
@@ -60,8 +64,9 @@ local:
 # profile. These dotted paths are the build contract:
 # each adapter class takes a single Settings argument.
 #
-# For the Firestore backend, point the gcp binding at:
-#   agent_registry.adapters.gcp.firestore_registry:FirestoreRegistryAdapter
+# The `gcp` entry below is a placeholder only: Settings.from_dict overwrites it at load time
+# from `backend` (see config.GCP_BACKEND_ADAPTERS), so switching backends is `backend:` /
+# AGENT_REGISTRY_BACKEND alone — never hand-edit this line to pick a backend.
 # ----------------------------------------------------------------------------- #
 adapters:
   registry:

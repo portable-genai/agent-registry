@@ -15,10 +15,11 @@ which is the omission that quietly reaches for the managed stack, and the other 
 adapter overstate coverage.
 
 This catalog carries a SECOND selector no sibling repo has: ``backend`` (``alloydb`` |
-``firestore``) names which managed store the ``gcp`` profile is deployed against, while the
-adapter that actually gets imported is the dotted ``gcp`` binding. The two are decoupled by
-design and are reconciled by hand, so ``backend: firestore`` left beside the AlloyDB binding is a
-deployment that provisions one store and talks to the other. That coherence is asserted here too.
+``firestore``) names which managed store the ``gcp`` profile is deployed against.
+:meth:`Settings.from_dict` OVERWRITES the dotted ``gcp`` binding from ``backend`` (via
+:data:`agent_registry.config.GCP_BACKEND_ADAPTERS`) at load time, precisely so that
+``backend: firestore`` can never leave the AlloyDB binding imported instead the way a
+hand-maintained pair of settings could drift. That invariant is asserted here too.
 
 Scope note. This file guards the SETS. The behavioural contracts of the profiles (``onprem``
 fails fast, ``local`` really registers and lists offline) are proven next door in
@@ -32,7 +33,7 @@ from typing import Protocol, get_type_hints
 import pytest
 
 from agent_registry import ports
-from agent_registry.config import RUNTIME_PROFILES, LocalSettings, Settings
+from agent_registry.config import GCP_BACKEND_ADAPTERS, RUNTIME_PROFILES, LocalSettings, Settings
 from agent_registry.container import Container, _load
 
 CONFIG_PATH = "config/settings.yaml"
@@ -48,14 +49,6 @@ PORT_PROTOCOLS: dict[str, type] = {
 #: accessor is bound to something the service can never ask for.
 PORT_ACCESSORS: dict[str, str] = {
     "registry": "registry",
-}
-
-#: ``backend`` value -> the adapter class name the ``gcp`` binding must end with. Both managed
-#: stores are shipped, so naming one in ``backend`` and binding the other is a live mismatch
-#: rather than a hypothetical one.
-BACKEND_ADAPTERS: dict[str, str] = {
-    "alloydb": "AlloyDBRegistryAdapter",
-    "firestore": "FirestoreRegistryAdapter",
 }
 
 #: Profiles whose adapters must construct and satisfy the Protocols with no Google Cloud SDK.
@@ -186,23 +179,39 @@ def test_no_binding_names_a_profile_nothing_may_select() -> None:
 def test_the_gcp_binding_matches_the_declared_managed_backend() -> None:
     """``backend`` and the ``gcp`` binding must name the SAME managed store.
 
-    They are separate settings by design (``backend`` also drives Terraform), which means the
-    only thing keeping them coherent is that somebody edits both. A deployment that provisions
-    Firestore and imports the AlloyDB adapter fails at the first write, in production, with a
-    connection error that says nothing about the real cause.
+    ``Settings.from_dict`` computes the ``gcp`` binding FROM ``backend`` (via
+    ``GCP_BACKEND_ADAPTERS``), so this can no longer drift for any settings loaded through the
+    normal path; the assertion guards the pipeline that makes that true rather than a
+    hand-maintained pair of strings. A regression here means a deployment would provision one
+    managed store and import the adapter for another.
     """
     settings = Settings.load(CONFIG_PATH)
-    assert settings.backend in BACKEND_ADAPTERS, (
+    assert settings.backend in GCP_BACKEND_ADAPTERS, (
         f"backend {settings.backend!r} names no shipped managed adapter; expected one of "
-        f"{sorted(BACKEND_ADAPTERS)}"
+        f"{sorted(GCP_BACKEND_ADAPTERS)}"
     )
-    expected_class = BACKEND_ADAPTERS[settings.backend]
     bound = settings.adapters["registry"]["gcp"]
-    assert bound.endswith(f":{expected_class}"), (
-        f"backend is {settings.backend!r} but the gcp binding is {bound!r}; it must name "
-        f"{expected_class}. Change both together or the deployed store and the imported adapter "
-        "are different stores."
+    assert bound == GCP_BACKEND_ADAPTERS[settings.backend], (
+        f"backend is {settings.backend!r} but the gcp binding is {bound!r}; it must be "
+        f"{GCP_BACKEND_ADAPTERS[settings.backend]!r}, or the deployed store and the imported "
+        "adapter are different stores."
     )
+
+
+@pytest.mark.parametrize("backend", sorted(GCP_BACKEND_ADAPTERS))
+def test_the_gcp_binding_follows_agent_registry_backend(
+    monkeypatch: pytest.MonkeyPatch, backend: str
+) -> None:
+    """Reloading settings with ``AGENT_REGISTRY_BACKEND`` set rebinds ``gcp`` to match it.
+
+    This is the deployment-time proof: Terraform's ``var.backend`` reaches the container ONLY
+    as this env var, so the switch is only real if changing it (with no other edit) changes
+    which adapter class the ``gcp`` profile imports.
+    """
+    monkeypatch.setenv("AGENT_REGISTRY_BACKEND", backend)
+    settings = Settings.load(CONFIG_PATH)
+    assert settings.backend == backend
+    assert settings.adapters["registry"]["gcp"] == GCP_BACKEND_ADAPTERS[backend]
 
 
 # --------------------------------------------------------------------------- #
