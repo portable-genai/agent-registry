@@ -351,8 +351,10 @@ red-team categories, with no unresolved review. The `agent-observability` review
 | `registry.observability_url` | `OBSERVABILITY_URL` | _empty_ (required by `gcp` release) |
 | `alloydb.instance_uri` | `AGENT_REGISTRY_ALLOYDB_URI` | _empty_ |
 
-To use Firestore instead of AlloyDB, set `backend: firestore` and point the `gcp` binding at
-`agent_registry.adapters.gcp.firestore_registry:FirestoreRegistryAdapter`.
+To use Firestore instead of AlloyDB, set `AGENT_REGISTRY_BACKEND=firestore` (Terraform passes
+`var.backend` through as this variable). Nothing else changes: the loader overwrites the
+`registry` port's `gcp` binding from `backend` at load time (`config.GCP_BACKEND_ADAPTERS`), so
+the `gcp` entry in `config/settings.yaml` is a placeholder and hand-editing it has no effect.
 
 ---
 
