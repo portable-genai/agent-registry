@@ -57,14 +57,21 @@ RUNTIME_PROFILES = frozenset({"gcp", "local", "onprem"})
 #: The ``gcp`` profile's ``backend`` (Terraform's ``var.backend``, surfaced here as
 #: ``AGENT_REGISTRY_BACKEND``) names the ONE managed store Terraform provisioned; this is the
 #: single place that maps it to the adapter that actually talks to that store.
-#: :meth:`Settings.from_dict` uses it to OVERWRITE every port's ``gcp`` binding at load time, so
-#: the imported adapter can never drift from the provisioned store the way a hand-maintained
-#: ``adapters.gcp`` string in ``settings.yaml`` could (a deployment naming ``firestore`` here
-#: while a stale string still imported the AlloyDB adapter).
+#: :meth:`Settings.from_dict` uses it to OVERWRITE the ``gcp`` binding of
+#: :data:`BACKEND_BOUND_PORT` (and no other port) at load time, so the imported adapter can never
+#: drift from the provisioned store the way a hand-maintained ``adapters.registry.gcp`` string in
+#: ``settings.yaml`` could (a deployment naming ``firestore`` here while a stale string still
+#: imported the AlloyDB adapter).
 GCP_BACKEND_ADAPTERS: dict[str, str] = {
     "alloydb": "agent_registry.adapters.gcp.alloydb_registry:AlloyDBRegistryAdapter",
     "firestore": "agent_registry.adapters.gcp.firestore_registry:FirestoreRegistryAdapter",
 }
+
+#: The ONE port whose ``gcp`` binding ``backend`` chooses: the catalog store. Every adapter in
+#: :data:`GCP_BACKEND_ADAPTERS` implements this port and only this port, so rebinding any other
+#: port's ``gcp`` entry from ``backend`` would point that port at a catalog-store class that does
+#: not implement it.
+BACKEND_BOUND_PORT = "registry"
 
 #: The profile string handed to every posture RELAXATION when no profile was ever named. It is
 #: deliberately NOT a member of :data:`RUNTIME_PROFILES` and never reaches a
@@ -259,17 +266,17 @@ class LocalSettings:
 def _bind_gcp_backend(
     adapters: dict[str, dict[str, str]], backend: str
 ) -> dict[str, dict[str, str]]:
-    """Overwrite every port's ``gcp`` binding with the adapter :data:`GCP_BACKEND_ADAPTERS`
-    names for ``backend``, so the class the container imports for the gcp profile is always the
-    one that talks to the store Terraform actually provisioned. A port with no ``gcp`` entry is
-    left alone; an unbound ``backend`` fails ``from_dict`` before this is ever called.
+    """Overwrite the :data:`BACKEND_BOUND_PORT` port's ``gcp`` binding with the adapter
+    :data:`GCP_BACKEND_ADAPTERS` names for ``backend``, so the class the container imports for
+    the catalog store under the gcp profile is always the one that talks to the store Terraform
+    actually provisioned. Every other port's bindings are copied untouched: ``backend`` names a
+    catalog store, not an adapter family. A missing store port or a store port with no ``gcp``
+    entry is left alone; an unbound ``backend`` fails ``from_dict`` before this is ever called.
     """
-    resolved: dict[str, dict[str, str]] = {}
-    for port, bindings in adapters.items():
-        bindings = dict(bindings)
-        if "gcp" in bindings:
-            bindings["gcp"] = GCP_BACKEND_ADAPTERS[backend]
-        resolved[port] = bindings
+    resolved = {port: dict(bindings) for port, bindings in adapters.items()}
+    store = resolved.get(BACKEND_BOUND_PORT)
+    if store is not None and "gcp" in store:
+        store["gcp"] = GCP_BACKEND_ADAPTERS[backend]
     return resolved
 
 

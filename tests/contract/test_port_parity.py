@@ -33,7 +33,13 @@ from typing import Protocol, get_type_hints
 import pytest
 
 from agent_registry import ports
-from agent_registry.config import GCP_BACKEND_ADAPTERS, RUNTIME_PROFILES, LocalSettings, Settings
+from agent_registry.config import (
+    BACKEND_BOUND_PORT,
+    GCP_BACKEND_ADAPTERS,
+    RUNTIME_PROFILES,
+    LocalSettings,
+    Settings,
+)
 from agent_registry.container import Container, _load
 
 CONFIG_PATH = "config/settings.yaml"
@@ -212,6 +218,45 @@ def test_the_gcp_binding_follows_agent_registry_backend(
     settings = Settings.load(CONFIG_PATH)
     assert settings.backend == backend
     assert settings.adapters["registry"]["gcp"] == GCP_BACKEND_ADAPTERS[backend]
+
+
+@pytest.mark.parametrize("backend", sorted(GCP_BACKEND_ADAPTERS))
+def test_backend_rebinds_only_the_catalog_store_port(backend: str) -> None:
+    """``backend`` chooses the catalog store's ``gcp`` adapter and NO other port's.
+
+    Every class in ``GCP_BACKEND_ADAPTERS`` implements the catalog-store port alone, so a
+    loader that rebinds every port's ``gcp`` entry would, the day a second port is bound,
+    silently point it at an AlloyDB or Firestore catalog class that does not implement it.
+    A second port's ``gcp`` binding (and every non-gcp binding) must survive the load verbatim.
+    """
+    other_gcp = "agent_registry.adapters.gcp.other:OtherAdapter"
+    other_local = "agent_registry.adapters.local.other:OtherAdapter"
+    settings = Settings.from_dict(
+        {
+            "profile": "local",
+            "backend": backend,
+            "adapters": {
+                BACKEND_BOUND_PORT: {
+                    "gcp": "placeholder:Stale",
+                    "local": "agent_registry.adapters.local.sqlite_registry:SqliteRegistryAdapter",
+                },
+                "other": {"gcp": other_gcp, "local": other_local},
+            },
+        }
+    )
+    assert settings.adapters[BACKEND_BOUND_PORT]["gcp"] == GCP_BACKEND_ADAPTERS[backend]
+    assert settings.adapters[BACKEND_BOUND_PORT]["local"] == (
+        "agent_registry.adapters.local.sqlite_registry:SqliteRegistryAdapter"
+    )
+    assert settings.adapters["other"] == {"gcp": other_gcp, "local": other_local}, (
+        f"backend {backend!r} rebound a port other than {BACKEND_BOUND_PORT!r}; only the "
+        "catalog store's gcp adapter follows AGENT_REGISTRY_BACKEND"
+    )
+
+
+def test_the_backend_bound_port_is_the_catalog_store_port() -> None:
+    """The port ``backend`` rebinds must be the one whose Protocol the backend adapters fill."""
+    assert PORT_PROTOCOLS.get(BACKEND_BOUND_PORT) is ports.AgentRegistryPort
 
 
 # --------------------------------------------------------------------------- #

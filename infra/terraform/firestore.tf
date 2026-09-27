@@ -1,5 +1,5 @@
-# Firestore (Native mode) — the serverless alternative catalog store. Regional in
-# us-central1 with CMEK. Created only when var.backend == "firestore".
+# Firestore (Native mode) — the serverless alternative catalog store. Regional in local.region,
+# CMEK-encrypted when var.cmek_enabled. Created only when var.backend == "firestore".
 
 resource "google_firestore_database" "registry" {
   count       = local.use_firestore ? 1 : 0
